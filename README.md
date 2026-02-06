@@ -69,15 +69,9 @@ The architecture consists of multiple LLM agents that play different roles and i
 
 The current implementation of the framework consists of the following agents:
 1. **Programmer Agent:** The agent is tasked with generating a PoC for a given attack vector and programming language. The programmer agent forwards the generated code to the programmer agent tools to compile the code.
-
-2. **Programmer Agent Tools:** The tools provide the ability for the programmer agent to interact with the system it is running on. The output of the tools is passed on to the programmer reflection agent.
-> [!NOTE]
-> This is not strictly speaking an agent as it does not involve any AI model.
-
-> [!NOTE]
-> Currently, the only tool provided is a C compiler. Future tools should include a way to run the compiled binary and interact with the system to gain information about the system's parameters like performance counters, cache architecture, etc.
-
+2. **Programmer Agent Tools:** The tools provide the ability for the programmer agent to interact with the system it is running on. The output of the tools is passed on to the programmer agent.
 3. **Programmer Reflection Agent:** The agent is tasked with analyzing the output of the programmer agent and its tools and generating feedback. The feedback is fed back to the programmer agent to improve the generated code.
+4. **Reflector Agent Tools:** The tools provide the ability for the reflector agent to interact with the system it is running on. The output of the tools is passed on to the reflection agent.
 
 
 ## Implementation
