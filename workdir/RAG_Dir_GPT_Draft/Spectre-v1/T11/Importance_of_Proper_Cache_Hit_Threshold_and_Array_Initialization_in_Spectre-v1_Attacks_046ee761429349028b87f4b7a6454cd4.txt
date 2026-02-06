@@ -1,0 +1,12 @@
+### Importance of Proper Cache Hit Threshold and Array Initialization in Spectre-v1 Attacks
+
+**Importance**:  
+The cache hit threshold is a critical parameter in side-channel attacks like Spectre-v1. It determines the boundary between cache hits and misses, which is essential for accurately inferring secret data. An incorrect threshold can lead to false positives or negatives, reducing the reliability of the attack. Similarly, initializing the array used for probing (e.g., `array2`) ensures a consistent cache state, which is crucial for reproducible results. Without proper initialization, the cache state may vary, leading to inconsistent and unreliable attack outcomes.
+
+**Implementation Guidance**:  
+- **Cache Hit Threshold**: Start with a standard threshold value, such as 80, which is commonly used in many systems. Adjust this value based on empirical testing on the target hardware to find the optimal threshold that distinguishes cache hits from misses.
+- **Array Initialization**: Before starting the attack, initialize the probing array (e.g., `array2`) to a known state. This can be done by setting all elements to a specific value, such as 1. This step ensures that the cache state is consistent across different runs of the attack, improving the reliability of the results.
+
+**Placement Guidance**:  
+- **Cache Hit Threshold**: Define the threshold as a macro or constant at the beginning of the code, so it can be easily adjusted and referenced throughout the program.
+- **Array Initialization**: Place the initialization step at the beginning of the main function or before the attack loop. This ensures that the array is in a known state before any speculative execution or cache probing occurs.

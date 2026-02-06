@@ -1,0 +1,29 @@
+# Prime+Probe Evaluation Metrics
+
+M1. Eviction Set Construction  
+• The code allocates and selects cache lines for the eviction set, ensuring each maps to the targeted L1D cache set using address bit manipulation.  
+• The eviction set contains as many lines as the cache associativity, all mapping to the targeted set.
+
+M2. Victim Set Construction  
+• The code allocates and select one cache line for the victim set, ensuring it maps to the same targeted cache set as the eviction set.  
+• The victim set is used to create contention in the targeted cache set.
+
+M3. Pointer-Chase Linked List Setup  
+• The eviction set is organized into a randomized, circular pointer-chase linked list, with pointers stored in the first bytes of each cache line.  
+• Randomization is used to defeat hardware prefetchers and layout bias.
+
+M4. Prime Function  
+• The attacker primes the targeted cache set by pointer-chasing through the eviction set, loading all attacker lines into the cache.
+
+M5. Victim Function  
+• The victim accesses its cache line in the targeted set, potentially evicting one attacker lines.
+
+M6. Probe and High-Resolution Timing  
+• The attacker measures access latency to the eviction set using pointer-chase and a high-resolution cycle counter (`__rdtsc`).  
+
+M7. Averaging Over Multiple Trials  
+• Both attack scenarios (Prime→Probe and Prime→Victim→Probe) are repeated for a large number of trials.  
+• Average access latency for each scenario is computed to ensure statistical reliability.
+
+M8. Delta Calculation and Cache Contention Detection  
+• The difference in average cycles between the two scenarios (delta) is calculated.  

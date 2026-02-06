@@ -1,0 +1,14 @@
+Title: Importance of Array/Probe Initialization in Microarchitectural Attacks
+
+Importance:
+Array or probe initialization is crucial in microarchitectural attacks, particularly those involving cache timing side-channels. Proper initialization ensures that the cache state is predictable and consistent across different runs of the attack. This predictability is essential for accurately measuring cache hits and misses, which are used to infer secret data. Without proper initialization, the cache state may vary, leading to unreliable or inconsistent results.
+
+Implementation Guidance:
+To implement array or probe initialization:
+- Initialize the array or probe with a known value before starting the attack loop. This can be a constant value or a pattern that ensures the cache lines are in a known state.
+- Ensure that the initialization is done outside the timing measurement loop to avoid affecting the timing results.
+- Use a loop to set each element of the array or probe to the desired value.
+
+Placement Guidance:
+- Place the initialization code at the beginning of the main function or before the attack loop starts.
+- Ensure that the initialization is completed before any speculative execution or timing measurements are performed.

@@ -1,0 +1,10 @@
+### High-Resolution Timer and Hit/Miss Classification in Microarchitectural Attacks
+
+**Importance**:  
+In microarchitectural attacks like Spectre-v1, accurately measuring the time taken for memory accesses is crucial. This timing information allows attackers to distinguish between cache hits and misses, which is the foundation of side-channel attacks. Without a high-resolution timer, the attack cannot reliably infer secret data, as it cannot differentiate between different cache states.
+
+**Implementation Guidance**:  
+To implement a high-resolution timer, use a mechanism like `__rdtscp` that provides precise timing information. This function reads the time-stamp counter and ensures serialization, which is necessary for accurate measurements. After accessing the memory location, read the time-stamp counter again to calculate the time difference. Use this time difference to classify the access as a hit or miss based on a predefined threshold.
+
+**Placement Guidance**:  
+Insert the timing measurement immediately before and after the memory access whose cache state you wish to determine. The classification logic should follow the timing measurement, where the time difference is compared against the threshold to decide if the access was a hit or miss. This logic should be placed within the loop that iterates over potential secret values, ensuring each access is evaluated.

@@ -1,0 +1,22 @@
+## Step 1: Comparison
+The ground truth source code for the Spectre-v1 attack vector is compared with the generated code. The comparison reveals that the generated code is functionally similar to the ground truth, with the main difference being the presence of stray backticks (`` ` ``) at the beginning and end of the generated code.
+
+## Step 2: Article Writing
+### Title: Importance of Flush+Reload Technique in Spectre-v1 Attack
+
+### Importance:
+The Flush+Reload technique is a crucial component in the Spectre-v1 attack vector. It allows the attacker to measure the time it takes to access a specific memory location, which is essential for determining whether the location is cached or not. This technique is vital for the success of the Spectre-v1 attack, as it enables the attacker to infer sensitive information about the victim's memory.
+
+### Implementation Guidance:
+To implement the Flush+Reload technique, the following steps can be followed:
+1. **Flush the cache line**: Use the `_mm_clflush` instruction to flush the cache line containing the memory location of interest.
+2. **Measure the access time**: Use the `__rdtscp` instruction to measure the time it takes to access the memory location.
+3. **Compare the access time**: Compare the measured access time with a predefined threshold to determine whether the memory location is cached or not.
+
+### Placement Guidance:
+The Flush+Reload technique should be placed inside the `readMemoryByte` function, specifically within the loop that iterates over the possible values of the secret byte. The correct placement is crucial, as it ensures that the cache line is flushed before measuring the access time, and that the measurement is taken immediately after accessing the memory location.
+
+The placement of the Flush+Reload technique is justified because it allows the attacker to accurately measure the time it takes to access the memory location, which is essential for determining whether the location is cached or not.
+
+## Step 3: Output
+The article is stored in a file named "Importance of Flush+Reload Technique in Spectre-v1 Attack.txt".

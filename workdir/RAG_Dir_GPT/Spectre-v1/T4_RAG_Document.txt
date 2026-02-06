@@ -1,0 +1,19 @@
+### Branch Predictor Training Loop: Enhancing Speculative Execution Attacks
+
+The branch predictor cannot be effectively misled by a single branch instance. It requires repeated exposure to a consistent execution path. 
+That’s the role of the training loop—to repetitively execute the target branch using valid inputs so that the predictor learns to expect a 
+specific behavior (e.g., always “true”).
+
+## Implementation Strategy
+
+# In general, the branch predictor training loop should include exclusively the following components maintaining the order:
+
+  ** The interleaved access logic combining safe and malicious indices. 
+  ** Cache eviction logic for evicting both probing array and control variable (e.g., array size)
+  ** Controlled delays to stabilize memory state.
+  ** Invocation of the victim code or gadget that performs out-of-bounds memory access.  
+
+# The branch predictor training loop should be repeated multiple times to ensure the branch predictor is reliably trained.
+# Sequence Enforcement: The above steps must be followed in the exact order listed. If any of the operations are misplaced—such as flushing cache before index interleaving—it may lead to premature reloading of control variables into the cache, thereby shortening or eliminating the speculative window.
+# Reordering Requirement: If any of the steps are found out of order during generation, the implementation must be automatically corrected by reordering them to match the prescribed sequence.
+# Correct Interleaving Variable: The index switching logic must depend on the training loop’s iteration counter. Using the wrong loop variable prevents correct alternation between safe and malicious accesses.

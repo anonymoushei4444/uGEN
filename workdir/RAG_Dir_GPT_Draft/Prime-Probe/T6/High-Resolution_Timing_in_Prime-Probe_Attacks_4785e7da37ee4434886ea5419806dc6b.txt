@@ -1,0 +1,16 @@
+**Title:** High-Resolution Timing in Prime-Probe Attacks
+
+**Importance:**
+High-resolution timing is crucial in microarchitectural and side-channel attacks, such as Prime-Probe, because it allows the attacker to accurately measure the time taken to access cache lines. This timing information is used to infer whether a cache line was evicted by the victim's access, which is the basis for detecting cache contention. Without precise timing, the attacker cannot reliably determine the presence of the victim's activity, leading to incorrect or inconclusive results.
+
+**Implementation Guidance:**
+To implement high-resolution timing, use the `__rdtsc()` instruction, which reads the processor's time-stamp counter. This counter provides a cycle-accurate measure of time, allowing for precise latency measurements. The general approach is as follows:
+1. Before accessing the cache lines, execute `_mm_lfence()` to ensure all previous instructions are completed.
+2. Use `__rdtsc()` to read the time-stamp counter and store the value as the start time.
+3. Access the cache lines using a pointer-chase technique to ensure all lines in the set are accessed.
+4. Execute `_mm_lfence()` again to serialize the instruction stream.
+5. Use `__rdtsc()` to read the time-stamp counter again and store the value as the end time.
+6. Calculate the difference between the end time and start time to obtain the access latency.
+
+**Placement Guidance:**
+The high-resolution timing measurement should be placed around the cache line access code. Specifically, it should be used to measure the time taken to access the eviction set in both the Prime → Probe and Prime → Victim → Probe scenarios. This placement is crucial because it directly measures the impact of the victim's access on the cache lines, allowing the attacker to detect cache contention accurately. By placing the timing measurement around the cache access, the attacker can isolate the latency caused by cache evictions, which is the key indicator of the victim's activity.

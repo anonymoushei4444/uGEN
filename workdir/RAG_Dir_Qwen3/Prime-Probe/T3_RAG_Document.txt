@@ -1,0 +1,28 @@
+Title: Linked List Construction with Shuffling
+
+Importance: 
+Linked list construction with shuffling is a critical component in Prime+Probe cache side-channel attacks. It ensures that cache lines are accessed in a non-sequential pattern, which is essential for:
+1. Maximizing cache eviction effectiveness by ensuring all associativity slots are filled
+2. Preventing hardware prefetcher interference that could bias timing measurements
+3. Creating a deterministic yet unpredictable access pattern that makes the attack more reliable
+
+Without proper shuffling, the attacker's eviction set may not effectively compete with the victim for cache resources, leading to undetectable timing differences.
+
+Implementation Guidance:
+1. Create an array of indices representing the cache lines in the eviction set
+2. Implement a shuffling algorithm (like Fisher-Yates shuffle) to randomize the order of indices
+3. Build a circular linked list where each cache line points to the next line according to the shuffled order
+4. Store the pointer in the first 8 bytes of each cache line (bytes [0..7])
+5. Ensure the linked list is circular by making the last element point back to the first
+
+This approach ensures that when the prime function traverses the linked list, it accesses all cache lines in a randomized order, making the eviction set more effective at filling all associativity slots of the target cache set.
+
+Placement Guidance:
+The linked list construction should be placed after the eviction and victim sets are identified but before the main attack loop begins. This is typically in the initialization phase of the attack code, right after the cache line gathering process.
+
+The shuffling function should be called before building each linked list (both eviction and victim sets) to ensure a different access pattern in each run. This placement is crucial because:
+1. It ensures the linked list is properly constructed before any prime/probe operations
+2. It randomizes the access pattern to prevent hardware prefetcher from learning the sequence
+3. It makes each trial independent, improving the statistical reliability of the measurements
+
+The shuffle_indices function should be called with the permutation array, followed by the build_linked_list function that creates the actual pointer chain based on the shuffled indices.

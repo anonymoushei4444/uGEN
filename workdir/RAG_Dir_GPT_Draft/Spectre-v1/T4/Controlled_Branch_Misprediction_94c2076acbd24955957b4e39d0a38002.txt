@@ -1,0 +1,22 @@
+### Article: Controlled Branch Misprediction
+
+#### Importance
+Controlled branch misprediction is a critical component in microarchitectural attacks like Spectre-v1. It leverages the speculative execution capabilities of modern processors to execute instructions that would not normally be executed, based on incorrect branch predictions. This allows attackers to access and manipulate data that is otherwise protected by bounds checks or other security mechanisms. The effectiveness of the attack relies heavily on the ability to consistently mispredict branches, thereby ensuring that the speculative execution path accesses sensitive data.
+
+#### Implementation Guidance
+To implement controlled branch misprediction, follow these steps:
+
+1. **Identify the Branch**: Locate the conditional branch in the victim function that you want to mispredict. This is typically a bounds check or a similar security mechanism.
+
+2. **Create a Training Loop**: Design a loop that repeatedly executes the branch with a predictable pattern. This pattern should train the branch predictor to expect a specific outcome (e.g., always true or always false).
+
+3. **Introduce Misprediction**: After training the branch predictor, introduce a condition that causes the branch to be mispredicted. This can be done by altering the input to the branch condition in a way that contradicts the trained pattern.
+
+4. **Ensure Speculative Execution**: Verify that the mispredicted branch leads to speculative execution of the desired code path. This path should include operations that access or manipulate the sensitive data.
+
+5. **Repeat and Refine**: Iterate the process to refine the misprediction rate and ensure consistent speculative execution. Adjust the training pattern and misprediction condition as needed to improve reliability.
+
+#### Placement Guidance
+The controlled branch misprediction logic should be placed in the code where the branch condition is evaluated. This is typically within a loop that repeatedly executes the victim function. Ensure that the training loop precedes the misprediction attempt, allowing the branch predictor to be conditioned before introducing the misprediction.
+
+By following these guidelines, you can effectively implement controlled branch misprediction in a variety of microarchitectural attack scenarios, enhancing the ability to exploit speculative execution vulnerabilities.

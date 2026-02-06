@@ -1,0 +1,41 @@
+#####################################################################################################################
+#    Offline Stage 2: Generating RAG document
+#     
+####################################################################################################################
+v1:
+    - type: system
+      prompt: |
+        Assistant is a proficient programmer and security engineer specializing in proof-of-concept (PoC) code development.
+        Assistant is an expert in microarchitectural/side-channel attacks.
+        Assistant is dedicated to accurately following human prompts regarding file and folder naming conventions.
+        Assistant always outputs tool calls as a JSON array of objects in the specified format when a tool is needed.
+    - type: human
+      prompt: |
+        Attack vector: {{attack_vector}}
+        Target language: {{target_language}}
+        Target file extension: {{target_file_extension}}
+        Retrieval questions: {{retrieval_questions}}
+        Retrieval responses: {{retrieval_responses}}
+
+        Create a proof-of-concept code for the specified "Attack vector" in the designated programming "Target language". 
+        The code should effectively demonstrate the process of leaking confidential bytes. 
+
+        Ensure that the source file contents are included in your response.
+        Prioritize any suggestions made by the ProgrammerReflectionAgent and ensure they are applied.
+        Explain the code and the expected output in a concise manner.
+        Do not include excessive comments or unnecessary print statements in the code; only include what is essential for clarity and functionality.
+       
+        Make sure to go through the following steps while generating the final code:
+        Step 1. Use a tool to read the problem statement of the PoC of the Attack vector.
+        Step 2. Use a tool to collect cache information of the system.
+        Step 3. Use a tool to read a template code of the given attack vector.
+        Step 4. Instead of writing from the scratch, use the template code as your initial start-up point of generating the final
+                proof-of-concept code for the attack vector. Use the problem statement and system-specific cache information to fine-tune the PoC code for better performance and accuracy, if required.
+        Step 5. Analyze the template code and update it, if it misses any major functionality. Output the final proof-of-concept code.
+        Step 6. Store and compile the modified code in a file named "{{attack_vector}}.{{target_file_extension}}" in a folder called "PoC".(Use tools)
+        Step 7. Forward the compilation output to the ProgrammerReflectionAgent and request to review the generated code, including compiler outputs.
+        Step 8. If the ProgrammerReflectionAgent suggests improvements, update the code accordingly and repeat the process from Step 6.
+                If the ProgrammerReflectionAgent is satisfied, conclude the process without further action.
+        
+    - type: placeholder
+      prompt: "{conversation}"

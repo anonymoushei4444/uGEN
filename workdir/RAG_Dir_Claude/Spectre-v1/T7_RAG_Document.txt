@@ -1,0 +1,43 @@
+Mixed Probe Order (Stride/Index Masking)
+
+**Importance:**
+
+Mixed probe order, also known as stride/index masking, is a critical microarchitectural patch for side-channel attacks that rely on cache timing measurements. This technique addresses several fundamental issues that can severely compromise attack reliability:
+
+1. **Cache Prefetcher Interference**: Modern processors employ sophisticated hardware prefetchers that detect sequential memory access patterns and automatically load subsequent cache lines. When probing cache lines in sequential order (0, 1, 2, 3...), prefetchers can inadvertently bring target data into cache, creating false positive signals that mask the actual speculative execution traces.
+
+2. **Spatial Locality Artifacts**: Sequential probing can trigger spatial locality optimizations in the memory hierarchy, where accessing one cache line causes neighboring lines to be loaded as well. This creates noise in timing measurements and reduces the signal-to-noise ratio of the actual side-channel.
+
+3. **Branch Predictor Pollution**: Sequential access patterns can influence branch prediction mechanisms, potentially interfering with the controlled branch misprediction training that is essential for speculative execution attacks.
+
+4. **Timing Measurement Accuracy**: Non-sequential probing helps isolate individual cache line access times by reducing the impact of memory controller optimizations and cache coherency protocols that favor sequential access patterns.
+
+**Implementation Guidance:**
+
+To implement mixed probe order effectively, follow these steps:
+
+1. **Choose a Suitable Stride Value**: Select a prime number or co-prime value relative to the total number of probe elements (typically 256 for byte-level attacks). Common effective values include 167, 163, or 173. The stride should ensure that all indices are visited exactly once before repetition.
+
+2. **Apply Index Transformation**: Before each cache timing measurement, transform the sequential loop index using a mathematical formula that distributes accesses across the entire probe space. The standard formula is: `mixed_index = ((sequential_index * stride_value) + offset) & mask` where mask is typically 255 for 256-element arrays.
+
+3. **Maintain Result Mapping**: Ensure that timing results are stored using the mixed index, not the sequential index. This preserves the correlation between the measured timing and the actual memory location being probed.
+
+4. **Verify Coverage**: The stride and offset values must guarantee that all possible indices (0-255) are probed exactly once during a complete iteration. This can be verified mathematically by ensuring the stride is coprime to the array size.
+
+5. **Consider Cache Line Alignment**: The mixed probing should account for cache line boundaries to ensure that each probe targets a distinct cache line, typically by spacing probes at 512-byte intervals or other cache-line-aligned distances.
+
+**Placement Guidance:**
+
+The mixed probe order patch should be implemented in the cache timing measurement loop, specifically:
+
+1. **Location Identification**: Find the loop that iterates through all possible byte values (typically 0-255) to measure cache access times. This loop usually contains timing measurement code using high-resolution timers.
+
+2. **Index Transformation Point**: Insert the mixed index calculation immediately before the memory address calculation. The transformation should occur after the loop variable is established but before any memory access or timing measurement.
+
+3. **Address Calculation Update**: Modify the memory address calculation to use the mixed index instead of the sequential loop index. Ensure that both the timing measurement and result storage use the consistent mixed index.
+
+4. **Result Storage Consistency**: Update the result accumulation logic to store timing measurements using the mixed index, maintaining the mapping between the transformed probe order and the actual memory locations being tested.
+
+5. **Integration with Existing Logic**: Ensure that any conditional logic or filtering (such as excluding certain indices) is applied to the mixed index rather than the sequential index, preserving the intended probe distribution while maintaining attack logic integrity.
+
+This patch is universally applicable to cache-based side-channel attacks including Spectre variants, Meltdown, Prime+Probe, and Flush+Reload attacks, as it addresses fundamental issues with hardware prefetchers and cache behavior that affect all timing-based microarchitectural attacks.

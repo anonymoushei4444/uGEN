@@ -1,0 +1,13 @@
+### Title: Cache Hit Threshold Adjustment
+
+**Importance**:  
+The cache hit threshold is a critical parameter in microarchitectural and side-channel attacks, particularly those exploiting speculative execution vulnerabilities like Spectre. It determines the boundary between cache hits and misses, which is essential for accurately inferring secret data. An incorrect threshold can lead to false positives or negatives, reducing the reliability and correctness of the proof-of-concept (PoC).
+
+**Implementation Guidance**:  
+To determine an appropriate cache hit threshold:
+- **Measure Baseline Access Times**: Use a high-resolution timer to measure access times for known cache hits and misses. This can be done by accessing a memory location, flushing it from the cache, and then accessing it again to measure the time taken.
+- **Calculate Threshold**: Analyze the distribution of access times and choose a threshold that clearly separates hits from misses. This threshold should be slightly above the maximum observed hit time and below the minimum observed miss time.
+- **Iterative Testing**: Test the chosen threshold in the target environment and adjust as necessary based on the accuracy of the attack.
+
+**Placement Guidance**:  
+The cache hit threshold should be defined as a constant at the beginning of the code, where other configuration parameters are set. This allows for easy adjustment and ensures it is applied consistently throughout the code.

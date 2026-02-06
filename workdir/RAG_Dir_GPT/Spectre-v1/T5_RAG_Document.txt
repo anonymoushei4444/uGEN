@@ -1,0 +1,19 @@
+### Article: Cache Eviction Targets
+
+## Importance
+Cache eviction is a critical component in microarchitectural attacks like Spectre-v1. It ensures that specific cache lines are evicted, allowing the attacker to measure the time it takes to access these lines later. This timing difference reveals whether the data was accessed speculatively, thus leaking sensitive information. Without proper cache eviction, the attack's reliability and accuracy are significantly reduced, as the cache state remains unchanged, leading to inconclusive timing measurements.
+
+
+## Implementation Guidance
+To implement cache eviction effectively, follow these steps:
+1. **Identify Target Memory**: Determine which memory regions influence both speculative execution and side-channel observation. This includes:​
+  - Arrays used to transmit or observe secrets (e.g., probe arrays).​
+  - Control variables like bounds checks (e.g., array size) that gate speculative access.
+
+2. **Use Cache Flush Instructions**: Utilize instructions like `_mm_clflush` to evict the target cache lines. This instruction ensures that the specified memory address is evicted from all levels of the cache hierarchy. 
+3. **Evict Before Speculative Execution**: Ensure that cache eviction occurs before the speculative execution path is triggered. This guarantees that the cache state is clean, allowing for accurate timing measurements post-speculation.
+
+## Placement Guidance
+- Cache eviction is usually performed followed by a controlled delay, to make sure the cache lines are flushed and immediately after that speculative execution is triggered.​
+- In Spectre-type attacks, the `victim_function` performs the speculative execution. Therefore, the cache eviction should be inserted before calling the `victim_function`.​
+- Order sequence: Cache Eviction -> Controlled Delay -> Invoking Speculative Execution (or, Calling `victim_function`).

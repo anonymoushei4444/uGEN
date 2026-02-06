@@ -1,0 +1,10 @@
+### Importance of Cache Eviction in Speculative Execution Attacks
+
+**Importance:**
+Cache eviction is a critical component in speculative execution attacks, such as Spectre-v1. It ensures that the cache lines associated with specific data are cleared, allowing the attack to measure the time taken to access these lines accurately. By evicting cache lines, the attack can distinguish between cache hits and misses, which is essential for inferring secret data. Without proper cache eviction, the attack may not reliably manipulate the cache state, leading to unclear or incorrect results.
+
+**Implementation Guidance:**
+To implement cache eviction, use instructions like `_mm_clflush` to clear specific cache lines. This instruction should be applied to the data structures involved in the attack, such as the probe array and any control variables. The eviction should be done before triggering the speculative execution path to ensure that the cache state is in a known condition.
+
+**Placement Guidance:**
+Cache eviction should be placed within the loop that prepares the speculative execution path. It should occur after the branch predictor training and before the speculative execution is triggered. This placement ensures that the cache is in a known state when the speculative execution path is invoked, allowing the attack to accurately measure cache access times. Proper placement is crucial for the reliability of the attack, as it directly impacts the ability to infer secret data based on cache behavior.

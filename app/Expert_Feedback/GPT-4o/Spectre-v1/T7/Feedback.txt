@@ -1,0 +1,5 @@
+*ADD* the following details under the Implementation Guidelines: 
+  **Apply Stride or Index Masking**: Use a stride or index masking technique to shuffle the order of memory accesses. 
+      - ***For example, you can use a formula like `mix_i = ((i * constant1) + constant2) & mask` to generate a mixed index.​
+        ***Here, `constant1` is a large odd multiplier (coprime with 2^n when `mask` = 2^n−1) that permutes i into a mixed order for `mix_i`, `constant2` is a small additive offset that rotates that permutation, and mask is a bitmask (e.g., 255) that confines `mix_i` to 0..`mask` (i.e., modulo 2^n).
+          

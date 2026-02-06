@@ -1,0 +1,8 @@
+*ADD* the following details under the Implementation Guidelines: 
+    ** Interleave safe and malicious index values within the same loop to maintain continuous branch predictor influence. 
+    ** Use branchless arithmetic expressions to toggle between safe and malicious indices. NEVER USE branching constructs like if statements or ternary (?,:) operators.
+        Example: index = a + cond * (b - a);, where "cond" toggles between 0 and 1 using a branchless computation (e.g., cond = !(j % 6)). Here, index interleaved between a and b.
+    
+*ADD* the following details under the Placement Guidelines:     
+    ** Insert this interleaving logic before the index is used as the input to a victim function. 
+    ** This step must not be inside the victim function, as the attacker should not have access to modify it. 

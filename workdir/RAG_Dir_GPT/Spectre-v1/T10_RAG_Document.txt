@@ -1,0 +1,22 @@
+### Article: Importance of Score Accumulation and Early-Stop in Microarchitectural Attacks
+
+#### Importance
+In microarchitectural and side-channel attacks, accurately identifying and extracting secret data is crucial. The process of score accumulation and early-stop is a critical component in ensuring the reliability and efficiency of these attacks. This mechanism helps in determining the most likely value of the secret data by accumulating scores for each potential value based on cache hit/miss patterns. An early-stop condition allows the attack to terminate once a high-confidence result is obtained, reducing unnecessary computations and improving the attack's efficiency.
+
+#### Implementation Guidance
+To implement score accumulation and early-stop effectively, follow these steps:
+
+1. **Initialize Scores**: Begin by initializing an array to store scores for each potential value. This array will be updated based on cache hit/miss observations.
+
+2. **Accumulate Scores**: During each iteration of the attack, update the scores for each potential value based on the observed cache behavior. A cache hit should increase the score for the corresponding value.
+
+3. **Determine Top Candidates**: After accumulating scores, identify the top two candidates with the highest scores. This helps in distinguishing between the most likely and the second most likely values.
+
+4. **Apply Early-Stop Condition**: Implement a condition to terminate the attack early if the score of the top candidate is significantly higher than the second candidate. This condition can be based on a threshold, such as the top score being at least twice the second score plus a constant.
+
+5. **Output the Result**: Once the early-stop condition is met, output the top candidate as the inferred secret value.
+
+#### Placement Guidance
+The score accumulation and early-stop logic should be placed after the cache timing measurements and before the final output assignment. This ensures that the scores are updated based on the latest observations and that the attack can terminate as soon as a high-confidence result is obtained.
+
+By following these guidelines, you can enhance the accuracy and efficiency of microarchitectural attacks, making them more effective in extracting secret data.

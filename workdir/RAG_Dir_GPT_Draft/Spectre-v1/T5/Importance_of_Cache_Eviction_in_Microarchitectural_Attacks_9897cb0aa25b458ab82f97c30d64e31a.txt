@@ -1,0 +1,13 @@
+### Importance of Cache Eviction in Microarchitectural Attacks
+
+**Importance:**
+Cache eviction is a critical component in microarchitectural attacks, particularly those exploiting speculative execution, such as Spectre. By evicting specific cache lines, attackers can ensure that subsequent memory accesses will result in cache misses, allowing them to measure access times accurately. This distinction between cache hits and misses is essential for inferring secret data based on speculative execution paths. Without proper cache eviction, the attack may yield unreliable results, as the cache state may not reflect the intended speculative execution effects.
+
+**Implementation Guidance:**
+To implement cache eviction, use a cache line flush instruction, such as `_mm_clflush`, to remove specific data from the cache. This instruction should be applied to the memory locations that will be probed later. The process involves:
+- Identifying the memory locations that need to be evicted (e.g., `array2` and control variables like `array1_size`).
+- Iterating over these locations and applying the cache line flush instruction to each.
+- Ensuring that the eviction occurs before the speculative execution is triggered.
+
+**Placement Guidance:**
+The cache eviction step should be placed immediately before the speculative execution is invoked. This ensures that the cache state is controlled and predictable, allowing for accurate timing measurements. In the context of a Spectre attack, this typically means placing the eviction logic within the loop that prepares the speculative execution environment, right before the victim function is called.

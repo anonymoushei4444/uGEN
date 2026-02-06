@@ -1,0 +1,12 @@
+### Cache Eviction and Branch Predictor Training in Spectre-v1 Attacks
+
+**Importance:**
+Cache eviction and branch predictor training are critical components in microarchitectural attacks like Spectre-v1. Cache eviction ensures that the cache is in a predictable state, allowing for accurate measurement of speculative execution effects. Branch predictor training manipulates the CPU's branch prediction logic to execute instructions speculatively, which is essential for leaking secret data.
+
+**Implementation Guidance:**
+- **Cache Eviction**: Use cache line flush instructions (e.g., `_mm_clflush`) to evict specific cache lines. This should be done before speculative execution to ensure that the cache is in a known state.
+- **Branch Predictor Training**: Implement a loop that trains the branch predictor by repeatedly executing a sequence of operations. The sequence should include cache eviction, a controlled delay, and invocation of the victim function. This ensures that the branch predictor is primed to mispredict the branch, leading to speculative execution.
+
+**Placement Guidance:**
+- **Cache Eviction**: Place cache eviction instructions before the speculative execution loop. This ensures that the cache is evicted before any speculative execution occurs.
+- **Branch Predictor Training**: Implement the training loop before the speculative execution loop. Ensure that the sequence of operations (Train → Evict → Delay → Invoke) is followed to effectively train the branch predictor.

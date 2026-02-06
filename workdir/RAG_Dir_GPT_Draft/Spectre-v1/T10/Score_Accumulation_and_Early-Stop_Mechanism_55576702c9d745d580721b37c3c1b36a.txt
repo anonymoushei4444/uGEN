@@ -1,0 +1,15 @@
+### Score Accumulation and Early-Stop Mechanism
+
+**Importance**:  
+The score accumulation and early-stop mechanism is crucial for microarchitectural and side-channel attacks like Spectre-v1. It ensures that the attack can accurately determine the leaked data by comparing the scores of different cache lines. This mechanism helps in identifying the correct byte of the secret with high confidence, reducing the chances of false positives or unclear results.
+
+**Implementation Guidance**:  
+To implement a score accumulation and early-stop mechanism, follow these steps:
+- Initialize an array to store scores for each possible byte value (e.g., 256 for a byte).
+- After each speculative execution attempt, update the score for the accessed cache line based on the timing measurement.
+- Continuously track the two highest scores and their corresponding byte values.
+- Implement an early-stop condition that breaks the loop if the highest score is significantly greater than the second highest (e.g., twice as large plus a small constant).
+- Assign the byte value with the highest score as the leaked data.
+
+**Placement Guidance**:  
+Place the score accumulation logic within the loop that measures cache access times. Ensure that the early-stop condition is checked after updating the scores for each iteration. This logic should be placed before the final output assignment to ensure that the most accurate data is used.

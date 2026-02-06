@@ -1,0 +1,25 @@
+### Importance of Cache Eviction and Mixed Probe Order in Microarchitectural Attacks
+
+#### Importance
+
+Cache eviction and mixed probe order are critical components in microarchitectural attacks, particularly those exploiting speculative execution vulnerabilities like Spectre. These components ensure that the attack can accurately measure cache hits and misses, which are essential for inferring secret data.
+
+- **Cache Eviction**: By evicting specific cache lines before speculative execution, attackers can ensure that any subsequent access to these lines will result in a cache miss, making it easier to detect speculative execution paths. This step is crucial for reducing noise and improving the reliability of the attack.
+
+- **Mixed Probe Order**: Using a mixed probe order with a permutation formula helps in accessing cache lines in a non-sequential manner. This reduces the predictability of cache accesses and minimizes the impact of noise from other processes or system activities. It enhances the accuracy of cache timing measurements, which are vital for distinguishing between cache hits and misses.
+
+#### Implementation Guidance
+
+1. **Cache Eviction**:
+   - Use cache line flush instructions (e.g., `_mm_clflush`) to evict specific cache lines before invoking the victim function.
+   - Target the cache lines that are used in the speculative execution path, such as those containing the secret data or control variables.
+
+2. **Mixed Probe Order**:
+   - Implement a permutation formula to access cache lines in a non-sequential order. Use a large odd multiplier and a small offset to generate a permutation that covers all possible indices.
+   - Ensure that the permutation formula is coprime to the number of cache lines to avoid repetition and ensure full coverage.
+
+#### Placement Guidance
+
+- **Cache Eviction**: Place the cache eviction step immediately before the speculative execution path is triggered. This ensures that the cache lines are evicted just before they are accessed speculatively.
+
+- **Mixed Probe Order**: Apply the mixed probe order during the cache timing measurement phase. This should be done after the speculative execution path has been triggered and before the timing measurements are taken.

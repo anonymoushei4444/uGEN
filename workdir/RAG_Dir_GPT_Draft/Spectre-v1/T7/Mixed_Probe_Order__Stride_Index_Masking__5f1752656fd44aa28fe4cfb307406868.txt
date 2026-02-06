@@ -1,0 +1,10 @@
+**Title: Mixed Probe Order (Stride/Index Masking)**
+
+**Importance**:  
+The mixed probe order is crucial for obfuscating the access pattern to `array2`, making it harder for defensive mechanisms to detect the attack. By accessing `array2` in a non-sequential manner, the attack can avoid predictable patterns that might be flagged by security systems. This component enhances the stealthiness and effectiveness of the attack.
+
+**Implementation Guidance**:  
+To implement a mixed probe order, use a formula that combines a multiplier and an offset to calculate the index for accessing `array2`. For example, use a formula like `((i * multiplier) + offset) & mask` to ensure the index wraps around within the desired range. The multiplier and offset should be chosen to maximize randomness and avoid sequential access patterns.
+
+**Placement Guidance**:  
+Insert the mixed probe order logic within the loop that accesses `array2` for timing measurements. Ensure it is applied consistently across all iterations to maintain the obfuscation of access patterns.

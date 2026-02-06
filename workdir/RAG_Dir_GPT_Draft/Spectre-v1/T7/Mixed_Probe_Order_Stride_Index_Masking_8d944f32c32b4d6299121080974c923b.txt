@@ -1,0 +1,20 @@
+### Article: Mixed Probe Order (Stride/Index Masking)
+
+#### Importance
+The "Mixed Probe Order" technique is crucial in microarchitectural attacks like Spectre-v1 to reduce noise and increase the accuracy of cache timing measurements. By accessing memory in a non-sequential order, this technique helps to obscure the access pattern, making it harder for defensive mechanisms to detect the attack. It also helps in reducing the effects of prefetching and other optimizations that might otherwise interfere with the attack's success.
+
+#### Implementation Guidance
+To implement a mixed probe order, you can use a simple mathematical transformation to shuffle the order in which memory addresses are accessed. This can be achieved by using a linear congruential generator or a similar method to generate a pseudo-random sequence of indices. The key is to ensure that each index is accessed exactly once per iteration, but in a non-sequential order.
+
+For example, you can use the formula:
+\[ \text{mix\_i} = ((i \times \text{multiplier}) + \text{offset}) \& \text{mask} \]
+where:
+- \( i \) is the current index in the loop.
+- \(\text{multiplier}\) is a constant that helps in spreading the indices.
+- \(\text{offset}\) is a constant that shifts the starting point.
+- \(\text{mask}\) is used to ensure the index wraps around within the desired range (e.g., 0 to 255 for a byte).
+
+#### Placement Guidance
+The mixed probe order should be applied in the loop where you measure memory access times. Specifically, it should be used to determine the order in which you access the memory addresses that you are timing. This typically occurs after the speculative execution has been triggered and before the timing measurements are taken. By applying the mixed probe order at this stage, you ensure that the access pattern is sufficiently randomized to avoid detection and interference.
+
+By following these guidelines, you can enhance the effectiveness of your microarchitectural attack by reducing noise and improving the accuracy of your measurements. This technique is applicable to a wide range of side-channel attacks beyond just Spectre-v1.

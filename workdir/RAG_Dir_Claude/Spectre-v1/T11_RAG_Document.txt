@@ -1,0 +1,38 @@
+Array/Probe Initialization
+
+**Importance:**
+Array/Probe initialization is a critical component in microarchitectural side-channel attacks, particularly those relying on cache timing measurements. This component ensures that the probe array (typically array2 in Spectre attacks) is properly allocated in physical memory rather than existing as copy-on-write zero pages. Without proper initialization, the probe array may not exhibit the expected cache behavior, leading to unreliable timing measurements and failed secret extraction.
+
+In modern operating systems, large arrays are often allocated as copy-on-write zero pages for memory efficiency. These pages are not backed by actual physical memory until they are written to. When cache timing attacks attempt to measure access times to uninitialized memory regions, the results become unpredictable because the memory subsystem behaves differently for virtual versus physical pages. This can cause cache hits and misses to be indistinguishable, rendering the side-channel attack ineffective.
+
+The initialization process forces the operating system to allocate real physical memory pages for the entire probe array, ensuring consistent cache behavior across all array elements. This consistency is essential for the attack to reliably differentiate between cached and uncached memory accesses, which forms the foundation of the timing-based side-channel.
+
+**Implementation Guidance:**
+The array/probe initialization should be implemented as a simple loop that writes a non-zero value to every element of the probe array. The specific value written is not critical, but it must be non-zero to trigger actual memory allocation. The implementation follows this pattern:
+
+1. Create a loop that iterates through every element of the probe array
+2. Write a simple non-zero value (such as 1) to each array element
+3. Ensure the loop covers the entire array size using sizeof() operator
+4. Place this initialization before any attack operations begin
+
+The loop structure should be straightforward: `for (i = 0; i < sizeof(probe_array); i++) probe_array[i] = 1;`
+
+This approach ensures that every byte of the probe array is touched, forcing the operating system to allocate physical memory pages for the entire array. The write operation must actually modify the memory content, so simply reading from the array elements would not achieve the same effect.
+
+**Placement Guidance:**
+The array/probe initialization must be placed in the main function, specifically after variable declarations but before any attack operations commence. This placement is crucial because:
+
+1. **Early Execution**: The initialization must occur before any cache timing measurements to ensure the probe array is properly allocated in physical memory from the start of the attack.
+
+2. **Main Function Scope**: Placing it in the main function ensures it executes once at program startup, avoiding redundant initialization that could interfere with timing measurements.
+
+3. **Before Attack Loop**: The initialization must complete before entering the multi-byte extraction loop or any individual byte reading operations. This ensures consistent memory behavior throughout the entire attack sequence.
+
+4. **After Variable Declarations**: The initialization should come after all necessary variables are declared but before any attack-specific operations begin, maintaining clean code organization and ensuring all required variables are available.
+
+The correct placement pattern is:
+- Variable declarations (malicious_x, score arrays, etc.)
+- Array/probe initialization loop
+- Attack execution (multi-byte extraction loop)
+
+This placement ensures that the probe array exhibits consistent cache behavior throughout the attack, enabling reliable differentiation between cache hits and misses that is essential for successful secret extraction in timing-based side-channel attacks.

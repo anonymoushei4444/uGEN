@@ -1,0 +1,15 @@
+### Importance of Accurate Timing and Thresholds in Microarchitectural Attacks
+
+**Importance:**
+Accurate timing and threshold settings are critical in microarchitectural attacks like Spectre-v1. They determine the attack's success by distinguishing between cache hits and misses. A precise timing mechanism, such as `__rdtscp`, provides high-resolution measurements necessary for detecting subtle differences in access times. The cache hit threshold is equally important, as it sets the boundary for classifying memory accesses. An incorrect threshold can lead to false positives or negatives, reducing the attack's reliability.
+
+**Implementation Guidance:**
+1. **Timing Mechanism**: Use high-resolution timers like `__rdtscp` to measure the time taken for memory accesses. This provides the granularity needed to detect cache hits accurately.
+2. **Threshold Setting**: Experiment with different threshold values to find the optimal setting for your specific environment. The threshold should be low enough to detect cache hits but high enough to avoid noise.
+3. **Score Accumulation**: Implement logic to accumulate scores for each potential secret value. This helps in identifying the most likely value based on repeated measurements.
+4. **Early Stop Condition**: Introduce a condition to stop the attack early if a certain confidence level is reached. This improves efficiency and reduces detection risk.
+
+**Placement Guidance:**
+- **Timing Measurement**: Place the timing logic immediately before and after the memory access you wish to measure.
+- **Threshold Check**: Implement the threshold check right after the timing measurement to classify the access as a hit or miss.
+- **Score Logic**: Accumulate scores after each measurement and check for the early stop condition before proceeding to the next iteration.

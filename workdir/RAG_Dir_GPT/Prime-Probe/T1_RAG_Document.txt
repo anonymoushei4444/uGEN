@@ -1,0 +1,15 @@
+### Title: Importance of Eviction Set Construction in Prime-Probe Attacks
+
+#### Importance:
+In Prime-Probe attacks, the attacker aims to detect the victim's activity by observing changes in access latency to a specific cache set. To achieve this, it is crucial to construct eviction and victim sets that map to the same cache set index. This ensures that the attacker's and victim's memory accesses contend for the same cache lines, allowing the attacker to detect evictions caused by the victim's access. Without this component, the attack may not accurately detect the victim's activity, as the memory accesses may not map to the same cache set.
+
+#### Implementation Guidance:
+To construct cache sets that map to a specific cache set index, follow these steps:
+1. **Allocate Memory**: Use a memory allocation method (e.g., `mmap`) to allocate a large, contiguous, page-aligned memory region.
+2. **Iterate Over Memory**: Iterate over the allocated memory in cache line-sized increments.
+3. **Calculate Cache Set Index**: For each memory address, calculate the cache set index using the formula: `(address / CACHE_LINE_SIZE) % L1D_SETS`.
+4. **Select Cache Lines**: Select cache lines that map to the target cache set index and add them to the eviction and victim sets.
+5. **Ensure Set Size**: Ensure that both the eviction and victim sets contain enough cache lines to fill the cache set (equal to the cache associativity).
+
+#### Placement Guidance:
+Place the cache set construction logic after memory allocation and before building pointer-chase linked lists. This ensures that the eviction and victim sets are correctly constructed before they are used in the attack scenarios. The placement is crucial because the attack relies on the eviction and victim sets mapping to the same cache set index to detect cache contention accurately.

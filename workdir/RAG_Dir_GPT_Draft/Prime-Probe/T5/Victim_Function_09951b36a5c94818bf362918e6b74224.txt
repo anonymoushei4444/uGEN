@@ -1,0 +1,17 @@
+### Title: Victim Function
+
+### Importance:
+The victim function is a critical component in microarchitectural and side-channel attacks like Prime+Probe. It simulates the behavior of a victim process that accesses specific cache lines, causing eviction of the attacker's cache lines. This eviction is what the attacker measures to infer the victim's activity. Without the victim function, the attack cannot demonstrate the eviction effect, making it impossible to detect changes in access latency caused by the victim's access.
+
+### Implementation Guidance:
+1. **Objective**: The victim function should access its own cache lines in the target cache set to evict the attacker's lines.
+2. **Access Pattern**: The function should access the cache lines in a manner that mimics realistic victim behavior. This can be achieved by accessing the first cache line in the victim set repeatedly.
+3. **Eviction Strategy**: Ensure that the victim's access pattern is sufficient to evict the attacker's lines. This might involve multiple rounds of access to the same cache line.
+4. **Example Logic**: For each round, access a specific offset within the cache line to ensure it is loaded into the cache. Use a loop to repeat this access multiple times.
+
+### Placement Guidance:
+1. **Location**: The victim function should be placed between the prime and probe phases in Scenario B (Prime → Victim → Probe).
+2. **Justification**: Placing the victim function between the prime and probe phases ensures that the victim's access occurs after the attacker primes the cache but before the attacker probes it. This sequence is crucial for demonstrating the eviction effect and measuring the resulting change in access latency.
+3. **Integration**: Ensure that the victim function is called after the prime phase and before the probe phase in the main loop of Scenario B.
+
+By following these guidelines, the victim function can be effectively implemented and integrated into the Prime+Probe attack, allowing for accurate measurement of cache eviction effects.

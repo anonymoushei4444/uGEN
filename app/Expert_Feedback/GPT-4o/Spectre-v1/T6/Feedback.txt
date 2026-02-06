@@ -1,0 +1,5 @@
+*ADD* the following details under the Placement Guidelines:     
+    **To effectively apply these patches, they should be inserted in the speculative execution loop within the attack code. 
+        - If an operation or step exists that extend the speculative execution path, this patch should be inserted right after that to extend it more.
+        - Otherwise, it should be placed inside the loop that triggers speculative execution, right before the victim function is called. 
+    **This ensures that the speculative execution path is extended and the cache state is manipulated as intended.

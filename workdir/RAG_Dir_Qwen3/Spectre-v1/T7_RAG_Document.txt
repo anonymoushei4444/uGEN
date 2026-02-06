@@ -1,0 +1,19 @@
+**Title: Mixed Probe Order for Cache Timing Analysis**
+
+**Importance:** The Mixed Probe Order technique is essential for accurate cache timing analysis in Spectre-v1 attacks. Without proper probe ordering, the cache timing measurements can be skewed by prefetching effects, cache associativity conflicts, and sequential access patterns that may not accurately reflect the true cache state. This component directly impacts the reliability of the side-channel by ensuring that cache hits from speculative execution are properly detected and distinguished from noise.
+
+**Implementation Guidance:**
+1. Implement a mathematical permutation function to generate a non-sequential probe order
+2. Use a large odd multiplier that is coprime to the array size (e.g., 167 for 256 elements) to ensure full coverage
+3. Add a small offset to the permutation calculation to further randomize the access pattern
+4. Apply a bitwise mask to keep indices within valid bounds (e.g., `& 255` for 0-255 range)
+5. Use the permuted index for both cache probing and result accumulation
+6. Ensure the probe order is deterministic to allow for consistent measurements
+
+**Placement Guidance:** The Mixed Probe Order implementation should be placed within the cache timing measurement loop, specifically when iterating through the side-channel array for timing analysis. This placement is crucial because:
+1. It must be applied to each cache probe operation to prevent sequential access patterns
+2. It should be implemented before the timing measurement to ensure proper cache access ordering
+3. The permuted index must be used consistently for both memory access and result recording
+4. It should be positioned after the speculative execution phase but before result analysis
+
+The mixed probe order is fundamental to creating reliable cache timing measurements that can accurately detect the subtle cache state changes caused by speculative execution, making it a critical component for successful Spectre-v1 exploitation.

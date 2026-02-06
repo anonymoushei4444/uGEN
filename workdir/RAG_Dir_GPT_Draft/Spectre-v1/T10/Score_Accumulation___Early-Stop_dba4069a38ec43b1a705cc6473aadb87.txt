@@ -1,0 +1,22 @@
+### Article: Importance of Score Accumulation & Early-Stop in Microarchitectural Attacks
+
+#### Importance
+In microarchitectural and side-channel attacks, accurately determining the leaked data is crucial. The process of score accumulation and early-stop is a critical component that enhances the reliability and efficiency of these attacks. This mechanism involves accumulating scores for potential data values based on cache timing measurements and deciding when to stop further attempts based on confidence levels. It ensures that the attack can terminate early once a high-confidence result is obtained, reducing unnecessary computations and improving the attack's speed and stealth.
+
+#### Implementation Guidance
+To implement score accumulation and early-stop effectively, follow these steps:
+
+1. **Initialize Score Array**: Create an array to store scores for each potential data value. Initialize all scores to zero at the start of each attempt.
+
+2. **Accumulate Scores**: During each speculative execution attempt, measure the cache access time for each potential data value. If the access time indicates a cache hit, increment the score for that value.
+
+3. **Determine Top Candidates**: After accumulating scores, identify the top two candidates with the highest scores. This helps in distinguishing between the most likely correct value and the next best alternative.
+
+4. **Early-Stop Condition**: Implement a condition to decide when to stop further attempts. A common approach is to stop if the score of the top candidate is significantly higher than the second candidate (e.g., more than twice as high) or if a certain confidence threshold is reached.
+
+5. **Output the Result**: Once the early-stop condition is met, output the top candidate as the leaked data value.
+
+#### Placement Guidance
+The score accumulation and early-stop logic should be placed after the cache timing measurements and before the output assignment. This ensures that the decision to stop further attempts is made based on the most recent and accurate data. It is typically implemented within the loop that iterates over speculative execution attempts, allowing for dynamic adjustment based on real-time measurements.
+
+By following these guidelines, the score accumulation and early-stop mechanism can be effectively integrated into microarchitectural attack implementations, enhancing their accuracy and efficiency.

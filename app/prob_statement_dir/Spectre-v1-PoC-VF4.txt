@@ -1,0 +1,54 @@
+* Spectre Variant 1 (Spectre-v1) Proof-of-Concept Generation
+
+** Problem Statement
+
+Generate a proof-of-concept program that demonstrates the Spectre Variant 1 (Spectre-v1) attack by leveraging speculative execution to
+leak a fixed secret string from memory using a microarchitectural side channel based on cache timing analysis.
+
+** Requirements
+
+1.  *** Secret Data
+    - The secret must be a fixed null-terminated string, defined as a pointer to a string literal, for example: 
+       ```
+       const char *secret = "It's a secret!!";
+       ```
+    - The goal is to leak the content of this string byte by byte without accessing it directly through architectural control flow.
+
+2.  *** Victim Buffer and Bounds Variable
+        - Define an array (array1) of size L:
+            ```
+            unsigned int array1_size = L;
+            uint8_t array1[L] = {0};
+            ```
+        - The PoC should treat this array as a safe boundary for access.
+
+3.    *** Victim Function (Fixed Form)
+        - The standard victim_function() to trigger the speculative execution vulnerability is as follows:
+            ``` 
+            void victim_function(size_t x) {
+                if (x < array1_size) {
+                    temp &= array2[array1[x] * 512];
+                }
+            }
+            ```
+        - However, for this PoC replace the above mentioned victim_function() with the following victim_function()
+        // ----------------------------------------------------------------------------------------
+        // Comments:  Make the index be the sum of two input parameters.
+        // ---------------------------------------------------------------------------------------- 
+        - The following function must be present as-is and used to trigger the speculative execution vulnerability:
+            ``` 
+            void victim_function(size_t x, size_t y) {
+                if ((x + y) < array1_size)
+                    temp &= array2[array1[x + y] * 512];
+            }
+            ```
+        - Do not modify this function.
+        - Ensure that the side channel array (`array2`) is properly defined and initialized before use.
+        - The attacker are expected to generate surrounding logic to exploit this function via out-of-bounds speculative access.
+
+4. **Leakage Target**
+    - Your objective is to recover the bytes of the secret variable without reading it directly.
+    - Print the leaked bytes to standard output, including memory offset information and a confidence indicator for each guessed byte.
+
+5. **Output Format**
+    - For each leaked byte, print its memory offset, the guessed value (both as a hex value and as the corresponding ASCII character), and a confidence score.

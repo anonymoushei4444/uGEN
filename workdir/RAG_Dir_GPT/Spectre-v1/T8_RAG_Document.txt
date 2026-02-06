@@ -1,0 +1,19 @@
+### High-Resolution Timer and Hit/Miss Classification in Microarchitectural Attacks
+
+## Importance:  
+In microarchitectural attacks like Spectre-v1, accurately measuring the time taken for memory accesses is crucial. This timing information allows attackers to distinguish between cache hits and misses, which is the foundation of side-channel attacks. Without a high-resolution timer, the attack cannot reliably infer secret data, as it cannot differentiate between different cache states.
+
+## Implementation Guidance:  
+1. **Use of High-Resolution Timers:** Utilize high-resolution timers such as the `__rdtscp` instruction, which provides a timestamp counter with minimal overhead. This allows for precise measurement of the time taken to access a memory location.​
+2. **Timing Measurement Logic:**​
+   - Record the timestamp before accessing the memory location.​
+   - Access the memory location to bring it into the cache.​
+   - Record the timestamp immediately after the access.​
+   - Calculate the time difference to determine if the access was a cache hit or miss.​
+3. **Threshold Calibration:** Establish a `CACHE_HIT_THRESHOLD` that distinguishes between cache hits and misses. This threshold may require calibration based on the specific hardware and environment to ensure accuracy.​
+4. **Result Analysis:** 
+   - Compare the measured memory access time against the `CACHE_HIT_THRESHOLD` to determine whether a memory location access was a cache hit (i.e., low latency) or a miss (i.e., high latency).
+   - To increase the reliability of identifying secret-dependent accesses, the analysis must compare the accessed memory address against the speculative access index used in the victim execution path.
+
+## Placement Guidance:  
+Insert the timing measurement immediately before and after the memory access whose cache state you wish to determine. The classification logic should follow the timing measurement, where the time difference is compared against the threshold to decide if the access was a hit or miss. This logic should be placed within the loop that iterates over potential secret values, ensuring each access is evaluated.

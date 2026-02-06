@@ -1,0 +1,17 @@
+### Article: Pointer-Chase Linked List Setup
+
+#### Importance:
+The Pointer-Chase Linked List Setup is a crucial component in microarchitectural attacks like Prime+Probe. It ensures that cache lines are accessed in a specific, predictable order, which is necessary for accurately measuring access latencies. Without this setup, the access pattern may become unpredictable, leading to inaccurate measurements and unreliable attack results. This component is vital for creating a deterministic access pattern that can be used to infer the victim's cache usage.
+
+#### Implementation Guidance:
+1. **Shuffle Indices**: Begin by creating an array of indices corresponding to the cache lines in the set. Shuffle these indices to randomize the access order. This step helps in avoiding any unintended prefetching or optimization by the CPU.
+
+2. **Build Linked List**: Use the shuffled indices to create a linked list of cache lines. For each cache line, store a pointer to the next cache line in the sequence. This setup ensures that accessing one cache line leads to the next, creating a predictable access pattern.
+
+3. **Access Pattern**: The linked list should be accessed in a loop, where each iteration follows the pointer to the next cache line. This pattern should be repeated enough times to ensure that the cache is fully primed or probed.
+
+#### Placement Guidance:
+- **Location**: The Pointer-Chase Linked List Setup should be placed after the memory allocation and cache set construction. It should be executed before the Prime and Probe functions to ensure that the cache lines are accessed in the correct order.
+- **Justification**: Placing the setup after memory allocation ensures that the cache lines are correctly mapped to the desired cache set. Executing it before the Prime and Probe functions ensures that the access pattern is established before any measurements are taken, leading to more accurate and reliable results.
+
+By following these guidelines, the Pointer-Chase Linked List Setup can be effectively implemented, enhancing the reliability and accuracy of microarchitectural attacks like Prime+Probe.

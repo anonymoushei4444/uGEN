@@ -1,0 +1,31 @@
+Controlled Branch Misprediction (Interleaved, Branchless)
+
+**Importance:**
+
+Controlled branch misprediction is a fundamental component in speculative execution attacks, particularly Spectre-v1. This mechanism is essential for creating the precise conditions needed to trigger speculative execution beyond bounds checks while maintaining attack reliability. The component serves two critical purposes: (1) training the branch predictor with safe accesses to establish predictable behavior, and (2) strategically introducing malicious accesses that exploit speculative execution windows.
+
+Without proper controlled branch misprediction, the attack fails to create the necessary speculative execution conditions. The processor's branch predictor must be trained to expect certain patterns, then surprised with out-of-bounds accesses during speculative execution. This timing-sensitive exploitation requires a branchless, deterministic approach that avoids introducing additional conditional branches that could interfere with the target vulnerability.
+
+The reliability and success rate of microarchitectural attacks heavily depend on this component because it directly controls when and how the processor speculatively executes beyond security boundaries. Incorrect implementation leads to failed attacks, inconsistent results, or complete inability to leak secret data.
+
+**Implementation Guidance:**
+
+The controlled branch misprediction mechanism should implement an interleaved pattern that alternates between safe and malicious memory accesses in a predictable, branchless manner. The implementation requires three key elements:
+
+1. **Condition Generation**: Create a binary condition (0 or 1) based on a predictable pattern. Use a modulo operation on the loop counter to generate periodic conditions. For example, check if the counter modulo a small number (like 6) equals zero. This creates a pattern where most iterations use safe accesses, with occasional malicious accesses.
+
+2. **Branchless Selection**: Implement the access pattern without introducing additional conditional branches. Use arithmetic operations to select between safe and malicious indices. Multiply the condition by the difference between malicious and safe indices, then add to the safe index. This creates: `selected_index = safe_index + condition * (malicious_index - safe_index)`.
+
+3. **Training-to-Attack Ratio**: Ensure the pattern heavily favors safe accesses (training) over malicious accesses (attack). A ratio like 5:1 or 6:1 (safe:malicious) allows sufficient branch predictor training while providing attack opportunities during speculative execution windows.
+
+The mathematical approach should be: `condition = (loop_counter % pattern_size == trigger_value)`, followed by `access_index = safe_index + condition * (malicious_index - safe_index)`. This ensures deterministic, branchless selection that maintains timing precision required for cache-based side channels.
+
+**Placement Guidance:**
+
+Locate the controlled branch misprediction logic within the training loop that precedes the victim function call. This placement is typically found in nested loops where the outer loop manages attack attempts and the inner loop performs branch predictor training.
+
+Search for the loop structure that contains: (1) cache eviction operations, (2) delay mechanisms, and (3) victim function calls. The controlled branch misprediction logic should be inserted immediately before the victim function call, after any delay mechanisms but before the actual vulnerable memory access.
+
+The pattern should be: cache eviction → delay → controlled branch misprediction → victim function call. This sequence ensures the branch predictor is properly trained and the speculative execution window is optimally timed for the attack.
+
+Look for variables representing safe indices (typically derived from loop counters or array bounds) and malicious indices (typically pointing to secret memory locations). The controlled branch misprediction logic should be placed where these variables are available and can be used to compute the final access index passed to the victim function.

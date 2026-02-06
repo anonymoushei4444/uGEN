@@ -1,0 +1,12 @@
+### Importance of Correct Cache Hit Threshold and Array Initialization in Microarchitectural Attacks
+
+**Importance**:  
+In microarchitectural attacks like Spectre-v1, the cache hit threshold is a critical parameter that determines the boundary between cache hits and misses. An incorrect threshold can lead to misclassification, resulting in unclear or incorrect data leakage. Similarly, initializing arrays used in side-channel attacks ensures consistent cache behavior, which is vital for reliable data extraction.
+
+**Implementation Guidance**:  
+- **Cache Hit Threshold**: Determine the appropriate threshold by measuring the access time for known cache hits and misses on the target hardware. The threshold should be set between these two values to maximize classification accuracy.
+- **Array Initialization**: Initialize arrays used in the attack with a consistent value to ensure predictable cache behavior. This can be done by setting each element to a known value, such as 1, before the attack loop begins.
+
+**Placement Guidance**:  
+- **Cache Hit Threshold**: Define the threshold as a constant at the beginning of the code, ensuring it is used consistently throughout the attack logic.
+- **Array Initialization**: Perform array initialization in the `main` function before entering the attack loop. This ensures the array is in a known state before any speculative execution occurs.

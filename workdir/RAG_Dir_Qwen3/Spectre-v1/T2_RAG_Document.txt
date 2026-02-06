@@ -1,0 +1,15 @@
+Title: Secret Reachability (OOB Path)
+
+Importance: Secret reachability is a fundamental prerequisite for successful Spectre-v1 exploitation. Without establishing a valid out-of-bounds path from the victim buffer to the secret data, speculative execution cannot access the target information. This component directly impacts attack correctness - if the secret is not positioned where the OOB access can reach it, the entire attack fails regardless of other implementation details.
+
+Implementation Guidance:
+1. Position the secret data in memory such that it is accessible through an out-of-bounds index calculation from the victim array
+2. Calculate the offset as: malicious_x = (size_t)(secret_address - victim_array_base_address)
+3. Ensure memory layout consistency by:
+   - Declaring the secret and victim array in close proximity
+   - Using compiler attributes or memory alignment directives if needed
+   - Verifying memory layout at runtime if possible
+4. The calculated offset must be valid for the bounds check bypass to work
+
+Placement Guidance:
+This component must be implemented in the setup phase before the attack loop begins. In the main function, after declaring all arrays and the secret, calculate the malicious offset using the address arithmetic formula. This calculated offset is then passed to the readMemoryByte function for each byte of the secret to be leaked. The placement is crucial because it establishes the spatial relationship that makes the entire attack possible - without this, there is no valid path for speculative execution to access the secret data.

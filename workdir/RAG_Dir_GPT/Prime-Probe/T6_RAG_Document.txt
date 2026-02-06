@@ -1,0 +1,19 @@
+### Article: High-Resolution Timing in Prime-Probe Attacks
+
+#### Importance:
+High-resolution timing is crucial in microarchitectural and side-channel attacks like Prime-Probe. It allows the attacker to measure the precise time taken to access cache lines, which is necessary to detect subtle changes in access latency caused by the victim's activity. Without accurate timing, the attacker cannot reliably distinguish between cache hits and misses, making it difficult to infer the victim's behavior.
+
+#### Implementation Guidance:
+To implement high-resolution timing in a Prime-Probe attack, follow these steps:
+1. **Use the `rdtsc` Instruction**: This instruction reads the timestamp counter, providing a high-resolution cycle count. It is essential for measuring the time before and after accessing the cache lines.
+2. **Fence Instructions**: Use `_mm_lfence` to serialize the instruction stream, ensuring that the `rdtsc` instruction is not reordered with other instructions. This guarantees accurate timing measurements.
+3. **Measure Access Time**: Implement a function, such as `probe_chase`, that measures the time taken to access a set of cache lines. This function should:
+   - Use `rdtsc` to record the start time.
+   - Access the cache lines in a dependent manner to ensure they are loaded into the cache.
+   - Use `rdtsc` again to record the end time.
+   - Return the difference between the end and start times as the access latency.
+
+#### Placement Guidance:
+The high-resolution timing function should be placed in the code where the access latency is measured for both scenarios (Prime → Probe and Prime → Victim → Probe). Specifically, it should replace any placeholder or incorrect timing logic in the generated code. This placement is crucial because it directly impacts the accuracy of the attack's measurements and the ability to detect cache contention caused by the victim.
+
+By following these guidelines, the high-resolution timing component can be effectively implemented and integrated into the Prime-Probe attack, enhancing its reliability and correctness.

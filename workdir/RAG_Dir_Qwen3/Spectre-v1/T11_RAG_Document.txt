@@ -1,0 +1,18 @@
+**Title:** Array/Probe Initialization
+
+**Importance:** 
+Array/Probe Initialization (M11) is a critical component in microarchitectural side-channel attacks like Spectre-v1. Without proper initialization of the side-channel array (array2), the attack cannot function correctly because there would be no measurable difference in cache access times between accessed and non-accessed memory locations. This initialization ensures that all probe locations start in a consistent state (typically evicted from cache) and that memory accesses have measurable timing differences. Without this step, the attacker cannot distinguish between cache hits and misses, making it impossible to extract secret data through timing analysis.
+
+**Implementation Guidance:**
+1. Initialize the side-channel array (array2) with non-zero values to ensure memory pages are allocated and resident
+2. Use a simple loop to set all elements of the array to a consistent value (typically 1)
+3. Ensure the initialization covers the entire array size needed for the attack (256 * 512 in Spectre-v1)
+4. Perform this initialization before any attack attempts
+5. The initialization should happen after declaring the array but before entering the main attack loop
+
+**Placement Guidance:**
+The Array/Probe Initialization should be placed:
+1. After the declaration of the side-channel array (array2)
+2. Before entering the main attack loop in the main() function
+3. After any other variable declarations but before the printf statement that begins the attack
+4. This placement is crucial because it ensures the array is properly initialized before any cache timing measurements are attempted, and it only needs to be done once rather than in each iteration of the attack loop

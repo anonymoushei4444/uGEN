@@ -1,0 +1,12 @@
+*REMOVE* the following line from Placement Guidance
+  Specifically, insert the cache eviction code right after initializing any loop variables and before any speculative execution paths are invoked.
+
+*ADD* the following details under the Implementation Guidelines: 
+    **Identify Target Memory: Determine which memory regions influence both speculative execution and side-channel observation. This includes:
+        - ***Arrays used to transmit or observe secrets (e.g., probe arrays).
+        - ***Control variables like bounds checks (e.g., array size) that gate speculative access.
+
+*ADD* the following details under the Placement Guidelines:   
+    ** Cache eviction is ususally performed followed by a controlled delay, to make sure the cachelines are flushed and immediately after that speculative execution is triggered.
+    ** In Spectre-type attacks, the victim_function performs the speculative execution. Thereby, the cache eviction should be inserted before calling the victim_function.
+    ** Order sequence: Cache Eviction -> Controlled Delay --> Invoking Speculative Exectution (or, Calling victim_function)

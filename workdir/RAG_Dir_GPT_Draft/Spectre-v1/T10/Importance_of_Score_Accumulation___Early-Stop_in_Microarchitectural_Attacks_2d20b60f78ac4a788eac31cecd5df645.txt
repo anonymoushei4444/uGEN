@@ -1,0 +1,18 @@
+### Title: Importance of Score Accumulation & Early-Stop in Microarchitectural Attacks
+
+#### Importance
+
+Score accumulation and early-stop logic are critical components in microarchitectural attacks, particularly those involving speculative execution and cache timing. This logic allows the attack to determine when a byte of secret data has been successfully read, based on the confidence score. By implementing early-stop, the attack can terminate the speculative execution loop as soon as a high-confidence result is obtained, improving efficiency and reducing noise.
+
+#### Implementation Guidance
+
+1. **Score Calculation**: Maintain an array to accumulate scores for each possible byte value. Increment the score for a byte value each time it is inferred from cache timing measurements.
+
+2. **Early-Stop Condition**: Implement a condition to break out of the loop when the score for a byte value exceeds a certain threshold, indicating a high-confidence read. This threshold can be a multiple of the next highest score to ensure reliability.
+
+3. **Threshold Adjustment**: The threshold for early-stop should be adjustable based on the environment and hardware to account for variations in cache behavior.
+
+#### Placement Guidance
+
+- **After Measurement Loops**: Place the score accumulation logic immediately after the cache timing measurement loop, where the access times are evaluated.
+- **Before Output Assignment**: Ensure the early-stop condition is checked before assigning the final output value, to prevent premature termination.

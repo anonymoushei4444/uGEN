@@ -1,0 +1,14 @@
+### Importance of Accurate Cache Hit Threshold in Microarchitectural Attacks
+
+**Importance:**
+The cache hit threshold is a critical parameter in microarchitectural attacks like Spectre-v1. It determines the boundary between cache hits and misses, which is essential for accurately detecting speculative execution paths. An incorrect threshold can lead to false positives or negatives, reducing the attack's reliability and effectiveness. In the context of Spectre-v1, the cache hit threshold directly impacts the ability to distinguish between legitimate and speculative memory accesses, which is crucial for leaking secret data.
+
+**Implementation Guidance:**
+1. **Understand the Hardware**: Begin by understanding the specific hardware architecture, as cache behavior can vary significantly between different CPUs.
+2. **Measure Access Times**: Use tools like `__rdtscp` to measure the access times for known cache hits and misses. This will help establish a baseline for the threshold.
+3. **Experiment with Values**: Start with a conservative threshold and gradually adjust it based on empirical data. Monitor the success rate of the attack to find an optimal value.
+4. **Consider Variability**: Account for variability in access times due to factors like CPU load and temperature. The threshold should be robust enough to handle these variations.
+
+**Placement Guidance:**
+- The cache hit threshold should be defined as a constant at the beginning of the code, where it can be easily adjusted.
+- Ensure that the threshold is used consistently throughout the code, particularly in the sections where access times are measured and compared.

@@ -1,0 +1,19 @@
+### Title: Controlled Branch Misprediction
+
+**Importance:**
+Controlled branch misprediction is a critical component in speculative execution attacks like Spectre-v1. It leverages the CPU's branch prediction mechanism to speculatively execute instructions that access secret data. By carefully crafting conditions that lead to mispredictions, attackers can manipulate the CPU to execute code paths that would not normally be taken, thereby accessing and leaking sensitive information. Without this component, the speculative execution path may not be triggered effectively, reducing the attack's success rate.
+
+**Implementation Guidance:**
+To implement controlled branch misprediction, follow these steps:
+1. **Identify the Conditional Branch:** Locate the conditional branch in the victim function that can be influenced by speculative execution.
+2. **Interleave with Legitimate Accesses:** Mix legitimate accesses with speculative ones to train the branch predictor. This increases the likelihood of misprediction when the speculative path is executed.
+   - Interleave safe and malicious index values within the same loop to maintain continuous branch predictor influence.
+   - Use branchless arithmetic expressions to toggle between safe and malicious indices. NEVER USE branching constructs like if statements or ternary (?,:) operators.
+     - Example: `index = a + cond * (b - a);`, where "cond" toggles between 0 and 1 using a branchless computation (e.g., `cond = !(j % 6)`). Here, index interleaved between a and b.
+3. **Ensure Speculative Execution:** Use loop constructs or repeated invocations to ensure the speculative path is executed multiple times, increasing the chances of successful data leakage.
+   - Increase the number of speculative execution attempts or iterations to improve the chances of successful data leakage. Consider using a dynamic approach where the number of attempts adapts based on the success rate of previous attempts.
+
+**Placement Guidance:**
+Insert the controlled branch misprediction logic within the loop that prepares the speculative execution environment. This should be done before invoking the victim function, ensuring the branch predictor is primed for misprediction.
+- Insert this interleaving logic before the index is used as the input to a victim function.
+- This step must not be inside the victim function, as the attacker should not have access to modify it.

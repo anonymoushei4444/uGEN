@@ -1,0 +1,15 @@
+### Article: Mixed Probe Order (Stride/Index Masking)
+
+#### Importance
+The concept of mixed probe order, often implemented through stride or index masking, is crucial in microarchitectural attacks like Spectre-v1. This technique helps in obfuscating the access pattern to the cache, making it harder for defensive mechanisms to predict or detect the attack. By varying the order in which memory addresses are accessed, attackers can reduce the predictability of their actions, thereby increasing the chances of successfully leaking sensitive data. This approach is particularly important in scenarios where the cache state is used to infer secret data, as it helps in avoiding detection and improving the reliability of the attack.
+
+#### Implementation Guidance
+To implement mixed probe order, follow these steps:
+1. **Determine the Access Pattern**: Decide on a non-sequential access pattern for probing the cache. This can be achieved by using a mathematical function that generates a pseudo-random sequence of indices.
+2. **Apply Stride or Index Masking**: Use a stride or index masking technique to shuffle the order of memory accesses. For example, you can use a formula like `mix_i = ((i * constant1) + constant2) & mask` to generate a mixed index.
+3. **Access Memory Using Mixed Indices**: Use the mixed indices to access memory locations. This will ensure that the cache is probed in a non-linear fashion, making it harder for detection mechanisms to identify the attack pattern.
+
+#### Placement Guidance
+The mixed probe order logic should be placed within the loop that iterates over potential cache lines. Specifically, it should be applied right before the memory access operation that is used to measure cache timing. This ensures that each memory access is performed in a shuffled order, thereby obfuscating the access pattern.
+
+By following these guidelines, you can effectively implement mixed probe order in your microarchitectural attack code, enhancing its stealth and success rate.

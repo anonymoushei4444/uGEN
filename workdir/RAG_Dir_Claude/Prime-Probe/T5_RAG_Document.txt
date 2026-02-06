@@ -1,0 +1,60 @@
+# Cache-Line-Aware Victim Access Pattern
+
+## Importance
+
+Cache-line-aware victim access patterns are essential for microarchitectural side-channel attacks because they ensure that victim operations create genuine cache contention without corrupting the attacker's data structures. In Prime+Probe attacks, the victim must access the same cache set as the attacker while avoiding interference with the attacker's pointer-chase linked lists. This component is critical for attack reliability and correctness because:
+
+1. **Data Structure Integrity**: Prevents victim accesses from corrupting the attacker's pointer chains, which would break subsequent probe operations
+2. **Realistic Cache Contention**: Simulates authentic victim behavior where the victim accesses its own data rather than the attacker's structures
+3. **Attack Fidelity**: Ensures the measured timing differences reflect genuine cache eviction effects rather than data corruption artifacts
+4. **Reproducible Results**: Maintains consistent attack behavior across multiple trials by preserving the integrity of both attacker and victim data structures
+
+Without proper cache-line-aware victim access patterns, the attack may produce false positives, inconsistent results, or complete failure due to corrupted data structures.
+
+## Implementation Guidance
+
+To implement cache-line-aware victim access patterns, follow these steps:
+
+1. **Identify Pointer Storage Location**: Determine where the attacker stores pointer data within each cache line (typically at the beginning, bytes 0-7 for 64-bit pointers)
+
+2. **Calculate Safe Offset**: Choose a memory offset within the same cache line that avoids the pointer storage area. For 64-byte cache lines with 8-byte pointers at offset 0, use offset 8 or higher
+
+3. **Implement Victim-Specific Access Pattern**: Create a victim function that:
+   - Accesses only a subset of the victim's cache lines (e.g., just the first line)
+   - Uses the calculated safe offset to avoid pointer corruption
+   - Performs both read and write operations to ensure cache line allocation
+   - Repeats the access pattern multiple times to guarantee cache eviction
+
+4. **Use Distinct Memory Operations**: Implement victim accesses using different memory operation patterns than the attacker (e.g., direct memory access vs. pointer chasing)
+
+5. **Ensure Cache Set Targeting**: Verify that victim accesses target the same cache set as the attacker's eviction set while using different cache lines
+
+Example logic:
+- If attacker uses pointer-chase through all cache lines in the set
+- Victim should use direct memory access to specific offsets in its own cache lines
+- Access pattern: victim_line[safe_offset] = value; read_value = victim_line[safe_offset]
+- Repeat this pattern multiple times to ensure eviction
+
+## Placement Guidance
+
+The cache-line-aware victim access pattern should be placed in the attack sequence as follows:
+
+1. **Function Definition Location**: Define the victim function after the attacker's prime and probe functions but before the main attack loop. This placement ensures the victim function is available when needed but doesn't interfere with the attacker's core operations.
+
+2. **Attack Sequence Integration**: Insert the victim access call in Scenario B of the attack sequence, specifically:
+   - After the prime operation (which fills the cache set with attacker data)
+   - After the first serialization barrier (which ensures prime completion)
+   - Before the probe operation (which measures access latency)
+   - Before the final serialization barrier (which ensures victim access completion)
+
+3. **Parameter Passing**: Pass the victim set and any necessary indices to the victim function, ensuring the victim operates on its own data structures rather than the attacker's.
+
+4. **Isolation from Attacker Operations**: Ensure the victim function is completely separate from attacker functions to prevent accidental interference with pointer-chase operations.
+
+The correct placement is crucial because:
+- **Timing Accuracy**: Victim access must occur between prime and probe to create measurable cache contention
+- **Data Integrity**: Victim function must be isolated to prevent corruption of attacker data structures
+- **Attack Realism**: Victim access should simulate realistic victim behavior occurring independently of attacker operations
+- **Measurement Validity**: Proper sequencing ensures that timing measurements reflect genuine cache effects rather than implementation artifacts
+
+This placement ensures that the victim access creates authentic cache contention while maintaining the integrity of both attacker and victim data structures throughout the attack sequence.

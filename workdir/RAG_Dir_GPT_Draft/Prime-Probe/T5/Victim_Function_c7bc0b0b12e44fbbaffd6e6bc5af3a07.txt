@@ -1,0 +1,18 @@
+**Title:** Victim Function
+
+**Importance:**
+The victim function is crucial in microarchitectural and side-channel attacks like Prime+Probe because it simulates the behavior of a victim process that accesses specific cache lines. This access is necessary to evict the attacker's cache lines, creating a measurable difference in access times. Without the victim function, the attack cannot demonstrate the ability to detect the victim's activity, which is the primary goal of such attacks.
+
+**Implementation Guidance:**
+To implement a victim function, follow these steps:
+1. **Identify Cache Lines:** Determine which cache lines the victim should access. These lines should overlap with the attacker's eviction set to ensure eviction occurs.
+2. **Access Pattern:** Design the victim's access pattern to mimic realistic usage. This could involve reading or writing to the cache lines in a specific order or frequency.
+3. **Timing and Frequency:** Ensure the victim accesses the cache lines at a frequency and timing that would realistically cause eviction of the attacker's lines. This might involve repeated accesses or specific timing intervals.
+4. **Data Manipulation:** Optionally, include data manipulation (e.g., read-modify-write) to ensure the cache lines are loaded into the cache.
+
+**Placement Guidance:**
+The victim function should be placed between the prime and probe phases in the attack sequence. This placement is crucial because:
+- **Eviction Trigger:** The victim's access must occur after the attacker primes the cache but before the probe phase. This ensures that any changes in cache state due to the victim's access are captured during the probe.
+- **Timing Accuracy:** Placing the victim function immediately after the prime phase helps maintain accurate timing measurements, as the cache state is altered right before the probe.
+
+By following these guidelines, the victim function can effectively simulate real-world scenarios where a victim process inadvertently reveals information through cache access patterns. This component is not attack-specific and can be adapted for various side-channel attack scenarios where cache eviction is a factor.

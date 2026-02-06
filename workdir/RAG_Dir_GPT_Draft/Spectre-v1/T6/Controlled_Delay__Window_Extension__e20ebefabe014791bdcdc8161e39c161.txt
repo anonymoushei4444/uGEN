@@ -1,0 +1,10 @@
+### Title: Controlled Delay (Window Extension)
+
+**Importance**:  
+The controlled delay is crucial in speculative execution attacks like Spectre-v1. It extends the speculative execution window, allowing more time for the speculative path to affect the cache state. Without this delay, the speculative execution may complete too quickly, preventing the cache from being manipulated effectively. This can lead to inconsistent or unclear results when attempting to leak secret data.
+
+**Implementation Guidance**:  
+To implement a controlled delay, introduce a loop within the speculative execution path. This loop should perform a simple operation that does not affect the program's logic but consumes CPU cycles. For example, a loop that iterates a fixed number of times (`for (volatile int z = 0; z < 100; z++) {}`) can be used. The loop should be volatile to prevent the compiler from optimizing it away.
+
+**Placement Guidance**:  
+The controlled delay should be placed within the speculative execution path, specifically after the branch misprediction and before the cache access. This ensures that the delay occurs during the speculative execution, allowing the cache state to be affected.

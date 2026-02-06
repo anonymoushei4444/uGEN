@@ -1,0 +1,22 @@
+### Importance of Cache Eviction and Mixed Probe Order in Microarchitectural Attacks
+
+**Importance:**
+
+Cache eviction and mixed probe order are critical components in microarchitectural attacks, particularly those exploiting speculative execution vulnerabilities like Spectre. These components ensure that the cache is manipulated in a predictable manner, allowing attackers to accurately measure cache hits and misses. Without proper cache eviction, the cache state may be inconsistent, leading to unreliable results. Similarly, a mixed probe order helps in reducing noise and improving the accuracy of cache timing measurements, which is crucial for distinguishing between cache hits and misses.
+
+**Implementation Guidance:**
+
+1. **Cache Eviction**:
+   - Use cache line flush instructions (e.g., `_mm_clflush`) to evict specific cache lines before speculative execution.
+   - Identify the memory locations that need to be evicted, such as the probe array and control variables.
+   - Ensure that the eviction is performed in a loop to cover all relevant cache lines.
+
+2. **Mixed Probe Order**:
+   - Implement a permutation formula to access the probe array in a non-sequential order.
+   - Use a large odd multiplier and a small offset to create a permutation that covers all possible indices.
+   - Ensure that the permutation is applied consistently across all iterations to maintain accuracy.
+
+**Placement Guidance:**
+
+- **Cache Eviction**: Place the cache eviction logic immediately before the speculative execution loop. This ensures that the cache is in a known state before any speculative execution occurs.
+- **Mixed Probe Order**: Apply the mixed probe order during the cache timing measurement phase. This helps in accurately measuring the time taken to access each element in the probe array.

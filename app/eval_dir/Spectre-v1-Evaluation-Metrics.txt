@@ -1,0 +1,47 @@
+M1. Victim: Bounds-Checked, Secret-Dependent Access
+• Victim routine guards an attacker-influenced index with a bounds check; under speculation the secret-dependent access still executes.
+• Secret-dependent access leaves a microarchitectural footprint and isn’t optimized away (e.g., via a side-effect sink).
+
+M2. Secret Reachability (OOB Path)
+• An out-of-bounds pathway makes the secret bytes reachable under misprediction.
+• Setup of the OOB target happens immediately before invoking the victim (no fences that would kill speculation).
+
+M3. Controlled Branch Misprediction (Interleaved, Branchless)
+• Training (in-bounds) and attack (out-of-bounds) inputs are interleaved within the same loop to keep the predictor primed.
+• Interleaving uses branchless selection/toggling; the chosen index is fed directly to the victim call.
+
+M4. Loop Sequence Correctness (Train → Evict → Delay → Invoke)
+• Within each iteration, steps occur in this order: (1) interleave/train, (2) evict relevant cache lines, (3) apply a short delay/dependency, (4) call the victim.
+• Any reordering that reloads control operands early (e.g., flushing before interleaving then touching bounds) is considered incorrect.
+
+M5. Cache Eviction Targets & Placement
+• Evicts both data used to signal the secret (e.g., probe structure) and control operands that gate the victim (e.g., bounds variable) to widen the speculative window.
+• Eviction happens immediately before the attack part of the loop and outside the victim; it does not re-touch the flushed operands prior to the victim call.
+
+M6. Controlled Delay (Window Extension)
+• Inserts a brief, non-serializing delay/dependency to extend the speculative window.
+• Placed right before calling the victim (not inside the victim), and does not introduce fences that would block speculation.
+
+M7. Mixed Probe Order (Stride/Index Masking)
+• Probes candidate symbols in a mixed/pseudorandom order (not strictly sequential) to avoid prefetcher bias.
+• Covers the full candidate domain each round.
+
+M8. High-Resolution Timing & Serialization
+• Measures probe-access latency with a high-resolution timer and proper serialization around the timed load.
+• Timing targets the probe structure that reflects the secret-dependent footprint (not the victim itself).
+
+M9. Hit/Miss Classification Threshold
+• Applies a clear threshold (fixed or calibrated) to classify hits vs. misses from timings.
+• Uses a consistent rule within the run.
+
+M10. Score Accumulation & Early-Stop
+• Accumulates evidence over many attempts for the same symbol and resets per new symbol.
+• Allows early termination only when the top candidate exceeds runners-up by a defined margin (gap/ratio + small additive buffer).
+
+M11. Array/Probe Initialization (Warm-Up without Bias)
+• Initializes/touches required memory (e.g., full probe structure) before measurements to remove first-touch artifacts.
+• Avoids unintentionally pre-warming the specific candidate during attack iterations.
+
+M12. Multi-Byte Extraction Loop
+• Iterates the full train→evict→delay→invoke→measure pipeline across successive target offsets to leak multiple bytes in order.
+• Emits recovered bytes with optional confidence/score metadata.

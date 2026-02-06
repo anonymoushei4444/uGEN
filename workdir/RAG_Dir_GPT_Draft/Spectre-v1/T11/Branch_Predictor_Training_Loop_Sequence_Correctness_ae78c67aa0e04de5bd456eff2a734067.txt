@@ -1,0 +1,44 @@
+Branch Predictor Training Loop Sequence Correctness
+
+**Importance:**
+Branch predictor training loop sequence correctness is fundamental to the success of speculative execution attacks like Spectre variants. The branch predictor is a critical microarchitectural component that attempts to predict the outcome of conditional branches before they are resolved, enabling speculative execution of subsequent instructions. In attacks exploiting speculative execution vulnerabilities, the precise ordering and timing of operations within the training loop directly determines whether the processor will speculatively execute the malicious code path that leaks secret information.
+
+The training loop must follow a specific sequence to maximize the probability of successful branch misprediction: Train → Evict → Delay → Invoke. This sequence ensures that the branch predictor is first trained to expect a particular branch outcome, then the relevant cache lines and control variables are evicted to slow down the actual branch resolution, followed by a controlled delay to extend the speculative execution window, and finally the victim function is invoked with the malicious input. Any deviation from this sequence can result in the branch predictor making correct predictions, preventing speculative execution of the vulnerable code path, or reducing the speculative execution window to an insufficient duration for the attack to succeed.
+
+**Implementation Guidance:**
+The branch predictor training loop must implement a four-phase sequence within each iteration:
+
+1. **Training Phase**: Execute the victim function multiple times with safe, valid inputs that will cause the branch condition to evaluate to true. This trains the branch predictor to expect the branch to be taken, establishing a prediction pattern that will be exploited during the attack phase.
+
+2. **Eviction Phase**: Use cache flush instructions to evict critical data structures from the cache hierarchy. This includes:
+   - Evicting the probe array elements to ensure clean timing measurements
+   - Evicting the control variable used in the bounds check to slow down branch resolution
+   - Evicting any other variables that might affect the timing of the conditional branch
+
+3. **Delay Phase**: Introduce a controlled delay using a volatile loop or similar mechanism. This delay serves to:
+   - Allow cache evictions to complete fully
+   - Extend the window during which speculative execution can occur
+   - Ensure that the branch predictor's prediction remains stable
+
+4. **Invocation Phase**: Call the victim function with the malicious input that will cause the bounds check to fail. Due to the previous training, the branch predictor will initially predict that the branch will be taken, causing speculative execution of the vulnerable code path before the actual bounds check resolves.
+
+The loop should alternate between safe and malicious inputs in a predictable pattern, typically using a modulo operation to determine when to use the malicious input. The ratio of safe to malicious invocations should favor safe inputs to maintain strong branch predictor training while still providing opportunities for the attack to succeed.
+
+**Placement Guidance:**
+The branch predictor training loop sequence must be placed within the main attack iteration loop, after the probe array has been flushed but before the timing measurements begin. This placement is critical because:
+
+1. **Per-Iteration Reset**: Each attack iteration must start with a clean cache state, so the training sequence must occur after the probe array flush but before any timing-sensitive operations.
+
+2. **Temporal Proximity**: The training sequence must be temporally close to the timing measurements to ensure that the branch predictor state established during training is still active when the malicious invocation occurs.
+
+3. **Cache State Management**: The eviction phase within the training loop must occur after the probe array flush to avoid interfering with the clean cache state established for timing measurements.
+
+4. **Speculative Window Optimization**: The delay phase must be positioned immediately before the victim function invocation to maximize the duration of speculative execution.
+
+The sequence should be implemented as a nested loop within the main attack loop:
+- The outer loop manages the overall attack iterations and probe array flushing
+- The inner loop implements the training sequence with the correct Train → Evict → Delay → Invoke ordering
+- The training loop should execute multiple iterations (typically 30) with a mix of safe and malicious inputs
+- Each training iteration should include all four phases in the correct order
+
+This placement ensures that the branch predictor is optimally conditioned for each attack attempt while maintaining the precise timing relationships necessary for successful speculative execution exploitation.

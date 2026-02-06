@@ -1,0 +1,24 @@
+### Cache Eviction and Branch Predictor Training in Microarchitectural Attacks
+
+**Importance:**
+
+Cache eviction and branch predictor training are critical components in microarchitectural attacks like Spectre. These components ensure that the speculative execution path is correctly trained and that the cache state is controlled, allowing for accurate measurement of cache hits and misses. Without these components, the attack may fail to distinguish between different memory accesses, leading to unclear or incorrect results.
+
+**Implementation Guidance:**
+
+1. **Cache Eviction**:
+   - Use cache eviction instructions (e.g., `_mm_clflush`) to evict specific cache lines before speculative execution.
+   - Evict the array used for probing (e.g., `array2`) to ensure that any subsequent access will result in a cache miss unless it is brought into the cache by speculative execution.
+   - Evict control variables (e.g., `array1_size`) to ensure that the bounds check is bypassed during speculative execution.
+
+2. **Branch Predictor Training**:
+   - Implement a loop sequence that trains the branch predictor to favor the speculative execution path.
+   - Use a controlled condition to alternate between safe and malicious indices, ensuring that the speculative execution path is taken.
+   - Follow a specific sequence: Train the branch predictor, evict the cache, introduce a controlled delay, and then invoke the speculative execution.
+
+**Placement Guidance:**
+
+- **Cache Eviction**: Place the cache eviction step immediately before the speculative execution loop. This ensures that the cache state is controlled and predictable at the time of speculative execution.
+- **Branch Predictor Training**: Implement the branch predictor training loop at the beginning of the speculative execution phase. Ensure that the loop follows the sequence: Train → Evict → Delay → Invoke.
+
+By incorporating these components, the attack can more reliably distinguish between cache hits and misses, improving the accuracy and reliability of the results.

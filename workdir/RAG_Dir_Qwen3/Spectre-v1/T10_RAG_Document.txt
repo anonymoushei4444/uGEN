@@ -1,0 +1,42 @@
+Title: Score Accumulation & Early-Stop Mechanism
+
+Importance: 
+The Score Accumulation & Early-Stop Mechanism is essential for efficient and reliable Spectre-v1 attacks because:
+
+1. It improves attack performance by terminating iterations when sufficient confidence is achieved
+2. It reduces execution time by avoiding unnecessary repetitions
+3. It enhances reliability by identifying the most likely secret values
+4. Without proper scoring, the attack may run indefinitely or produce unreliable results
+5. It provides confidence metrics for the leaked data quality
+
+Implementation Guidance:
+To implement an effective Score Accumulation & Early-Stop Mechanism:
+
+1. Accumulate timing results across all iterations:
+   - Maintain a results array to count cache hits for each possible byte value
+   - Increment counters based on timing measurements from the cache probe
+   - Example: `results[mix_i]++` when a cache hit is detected for byte value mix_i
+
+2. Implement proper result selection:
+   - Identify the top two candidates with highest scores
+   - Use a selection algorithm that finds the maximum and second-maximum values
+   - Example: Compare each result against current top two values and update accordingly
+
+3. Define early-stop conditions based on confidence thresholds:
+   - Stop when the best candidate has significantly higher score than second-best
+   - Use ratio-based thresholds (e.g., 2:1 ratio) for reliable stopping
+   - Include special cases for low-score scenarios
+   - Example: `if (results[j] >= (2 * results[k] + 5) || (results[j] == 2 && results[k] == 0)) break;`
+
+Placement Guidance:
+The Score Accumulation & Early-Stop Mechanism should be placed within the main attack loop:
+
+1. Inside the outer tries loop, after cache timing measurements
+2. Before the loop termination condition check
+3. After accumulating results but before starting next iteration
+
+The placement is crucial because:
+- It must have access to complete timing results from each iteration
+- It should be positioned to influence the main loop termination
+- It needs to be executed after each complete attack attempt
+- The mechanism should work in conjunction with the result accumulation to provide real-time feedback

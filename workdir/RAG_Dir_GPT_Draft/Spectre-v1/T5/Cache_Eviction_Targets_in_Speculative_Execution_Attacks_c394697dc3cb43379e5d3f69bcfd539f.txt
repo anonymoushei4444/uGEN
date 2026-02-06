@@ -1,0 +1,15 @@
+### Title: Cache Eviction Targets in Speculative Execution Attacks
+
+**Importance:**
+Cache eviction is a critical step in speculative execution attacks like Spectre-v1. By evicting specific cache lines, attackers can ensure that subsequent memory accesses will result in cache misses, which are detectable through timing measurements. This step is essential for creating a measurable difference in access times, allowing attackers to infer secret data. Without proper cache eviction, the attack may fail to produce reliable results, as the cache state may not be influenced as intended.
+
+**Implementation Guidance:**
+To implement cache eviction, follow these steps:
+- Identify the memory regions that need to be evicted. Typically, this includes arrays or variables involved in the speculative execution path.
+- Use cache line flush instructions (e.g., `_mm_clflush` on x86 architectures) to evict these regions from the cache. This ensures that subsequent accesses will result in cache misses.
+- Ensure that the eviction is performed before the speculative execution is triggered, so the cache state is predictable.
+
+**Placement Guidance:**
+- Place the cache eviction step immediately before the speculative execution loop. This ensures that the cache is in the desired state when the speculative execution is triggered.
+- Evict all relevant memory regions, including those used for bounds checking and those accessed speculatively.
+- Ensure that the eviction is complete before any speculative execution occurs, to avoid unintended cache hits.

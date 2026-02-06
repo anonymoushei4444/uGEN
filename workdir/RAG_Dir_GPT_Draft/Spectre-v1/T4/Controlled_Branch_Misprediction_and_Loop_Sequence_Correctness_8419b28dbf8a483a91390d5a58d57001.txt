@@ -1,0 +1,10 @@
+### Title: Controlled Branch Misprediction and Loop Sequence Correctness
+
+**Importance**:  
+Controlled branch misprediction is essential for microarchitectural attacks like Spectre-v1 because it allows the attacker to manipulate the branch predictor, causing the CPU to speculatively execute code paths that access sensitive data. This speculative execution can lead to cache state changes that are observable through side-channel attacks. The loop sequence correctness ensures that the speculative execution path is consistently taken, increasing the reliability of the attack.
+
+**Implementation Guidance**:  
+To implement controlled branch misprediction, introduce a loop that repeatedly trains the branch predictor with a known condition. Use a variable condition that occasionally causes a misprediction, leading to speculative execution with an out-of-bounds index. Ensure that the loop sequence follows the order: train the branch predictor, flush cache lines, introduce a delay, and invoke the victim function. This sequence maximizes the chances of successful speculative execution.
+
+**Placement Guidance**:  
+Place the branch misprediction logic within a loop that runs multiple iterations. The loop should be positioned before the cache timing measurements, ensuring that the speculative execution path is taken before any cache state changes are observed. The controlled delay should be inserted between the cache flush and the victim function invocation to extend the speculative execution window.

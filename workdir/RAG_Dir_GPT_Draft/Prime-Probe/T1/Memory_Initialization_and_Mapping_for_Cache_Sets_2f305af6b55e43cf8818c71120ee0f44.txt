@@ -1,0 +1,20 @@
+### Title: Memory Initialization and Mapping for Cache Sets
+
+#### Importance:
+In microarchitectural and side-channel attacks like Prime-Probe, correctly initializing and mapping memory to specific cache sets is crucial. This ensures that the attacker can accurately fill and probe the cache lines corresponding to the target set. Without proper memory initialization, the attack may fail to detect the victim's activity, leading to unreliable or incorrect results.
+
+#### Implementation Guidance:
+1. **Memory Allocation**: Use a system call like `mmap` to allocate a large, contiguous, page-aligned memory region. This ensures that the memory is suitable for cache line alignment and manipulation.
+   
+2. **Cache Set Mapping**: Iterate over the allocated memory to identify and select cache lines that map to the target cache set index. This involves calculating the cache set index for each memory address and comparing it to the target set.
+
+3. **Eviction and Victim Sets**: Construct two sets of cache lines (Eviction Set and Victim Set) that map to the same cache set index. Ensure that each set contains enough lines to fill the cache set (equal to the cache's associativity).
+
+4. **Error Handling**: Implement checks to ensure that the required number of cache lines is gathered for both sets. If not, handle the error gracefully, possibly by retrying with a different memory region or reporting the failure.
+
+#### Placement Guidance:
+- **Before Scenario Execution**: Place the memory initialization and mapping logic at the beginning of the program, before any cache priming or probing operations. This ensures that the cache sets are correctly prepared for the attack scenarios.
+  
+- **Justification**: Proper placement ensures that the cache lines are correctly aligned and mapped before any attack logic is executed. This is crucial for the reliability and correctness of the attack, as it directly impacts the ability to detect changes in cache access patterns caused by the victim.
+
+By following these guidelines, the memory initialization and mapping process can be generalized and applied to various microarchitectural attacks, ensuring that the PoC is both reliable and effective.

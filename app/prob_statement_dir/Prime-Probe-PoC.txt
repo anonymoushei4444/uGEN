@@ -1,0 +1,25 @@
+# Problem Statement: Prime-Probe 
+
+Design and implement a Proof-of-Concept for a Prime+Probe side-channel attack targeting a specific L1 data cache set index. 
+The attacker should fill all cache lines in a chosen cache set index(prime), and then measure access latency both before and after the victim accesses a single cache line in that target cache set index. 
+The goal is to empirically show that the attacker can detect the victim’s activity by observing changes in access latency.
+
+## Requirements:
+    ### 1. Allocate a large, contiguous, page-aligned memory region using `mmap`. 
+    ### 2. Use this memory to construct two sets of cache lines: an Eviction Set and a Victim Set, both mapping to the same L1 data cache set index.
+    ### 3. Build pointer-chase linked lists for both sets.
+    ### 4. Run two scenarios repeatedly:
+            - **Scenario A (Prime → Probe):** Prime the target cache set by accessing all lines in the eviction set, then immediately measure the access latency to the same set.
+            - **Scenario B (Prime → Victim → Probe):** Prime the cache set with the eviction set, then have the victim access its own lines in the same set to evict the attacker’s lines, followed by measuring the access latency to the eviction set.
+    ### 5. Measure and average access latencies for both scenarios over many trials.
+    ### 6. Compute the difference (Delta) between the two scenarios in terms of access time and report the Delta in access latency caused by the victim’s access.
+
+## Expected Output Format:
+    ### Print: 
+            - **Target cache set index,** 
+            - **Virtual addresses of all cache lines from Eviction Set,**
+            - **Virtual addresses of all cache lines from Victim Set,**
+            - **Number of trials,** 
+            - **Average cycles for Scenario A and Scenario B,**
+            - **Delta in cycles.**
+    ### Success Condition: If calculated Delta is greater than 3 cycles, consider it as succesful contention or expected behavior. 

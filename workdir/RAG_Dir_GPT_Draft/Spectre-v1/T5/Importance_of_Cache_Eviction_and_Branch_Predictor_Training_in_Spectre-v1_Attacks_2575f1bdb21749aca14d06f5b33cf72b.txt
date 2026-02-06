@@ -1,0 +1,16 @@
+### Importance of Cache Eviction and Branch Predictor Training in Spectre-v1 Attacks
+
+**Importance:**
+Cache eviction and branch predictor training are critical components in microarchitectural attacks like Spectre-v1. Cache eviction ensures that specific memory lines are removed from the cache, allowing the attack to measure access times accurately. Branch predictor training manipulates the CPU's speculative execution path, causing it to execute instructions that influence the cache state. These components are essential for creating the conditions necessary to leak secret data through side-channel analysis.
+
+**Implementation Guidance:**
+1. **Cache Eviction**: Use cache line flush instructions (e.g., `_mm_clflush`) to evict specific memory lines before executing the speculative path. This ensures that subsequent accesses will result in cache misses, which can be measured.
+2. **Branch Predictor Training**: Implement a loop that repeatedly executes a sequence of operations designed to train the branch predictor. This involves alternating between correct and incorrect predictions to create a predictable speculative execution path.
+3. **Controlled Branch Misprediction**: Use a branchless approach to control the speculative execution path. This can be achieved by manipulating the input conditions to the branch instruction.
+4. **Mixed Probe Order**: Implement a stride/index masking technique to access memory in a non-sequential order, reducing the predictability of cache accesses.
+
+**Placement Guidance:**
+- **Cache Eviction**: Place cache eviction instructions before the speculative execution path to ensure the cache is in a known state.
+- **Branch Predictor Training**: Implement the training loop before the speculative execution path to ensure the branch predictor is primed for misprediction.
+- **Controlled Branch Misprediction**: Integrate this logic within the speculative execution path to influence the cache state.
+- **Mixed Probe Order**: Use this technique within the memory access loop to ensure non-sequential cache accesses.

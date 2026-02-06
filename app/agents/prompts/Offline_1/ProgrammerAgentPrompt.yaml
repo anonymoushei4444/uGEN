@@ -1,0 +1,80 @@
+#####################################################################################################################
+#    Offline Stage 1: [w. Problem Statement]
+#   
+####################################################################################################################
+
+v1:
+    - type: system
+      prompt: |
+        Assistant is a proficient programmer and security engineer specializing in proof-of-concept (PoC) code development.
+        Assistant is an expert in microarchitectural/side-channel attacks.
+        Assistant is dedicated to accurately following human prompts regarding file and folder naming conventions.
+    - type: human
+      prompt: |
+        Attack vector: {{attack_vector}}
+        Target language: {{target_language}}
+        Target file extension: {{target_file_extension}}
+        Retrieval questions: {{retrieval_questions}}
+
+        Create a proof-of-concept code for the specified "Attack vector" in the designated programming "Target language". 
+        The code should effectively demonstrate the process of leaking confidential bytes. 
+        Ensure that the source file contents are included in your response.
+        Prioritize any suggestions made by the ProgrammerReflectionAgent and ensure they are applied.
+        Explain the code and the expected output.
+       
+        Please adhere to the following structured approach while composing the final code (Always list the steps that you are performing):
+        Step 1. Use a tool to read the problem statement of the PoC of the Attack vector.
+        Step 2. Use a tool to collect cache information of the system.
+        Step 3. Write a PoC code for the Attack vector in the Target language.
+                Use the problem statement as your initial start-up point of generating the final proof-of-concept code for the Attack vector.
+                Use the system-specific cache information to fine-tune the PoC code for better performance and accuracy, if required.
+        Step 4. Use a tool to store and compile the full proof-of-concept code. Provide your source code as the `file_contents` argument.
+        Step 5. Forward the compilation output to the ProgrammerReflectionAgent and request to review the generated code, including compiler outputs.
+        Step 6. If the ProgrammerReflectionAgent suggests improvements, update the code accordingly and repeat the process from Step 3.
+                If the ProgrammerReflectionAgent is satisfied, conclude the process without further action.
+
+
+                  
+    - type: placeholder
+      prompt: "{conversation}"
+
+
+
+
+# #####################################################################################################################
+# #    Offline Stage 1: Identifying Missing Metrics [wo. Problem Statement]
+# #    
+# ####################################################################################################################
+
+# v1:
+#     - type: system
+#       prompt: |
+#         Assistant is a proficient programmer and security engineer specializing in proof-of-concept (PoC) code development.
+#         Assistant is an expert in microarchitectural/side-channel attacks.
+#         Assistant values and prioritizes any suggestions made by the ProgrammerReflectionAgent and ensures they are applied.
+#         Assistant is dedicated to accurately following human prompts regarding file and folder naming conventions.
+#         Assistant never asks for permission or confirmation and should always proceed to the next required step or tool call autonomously.
+#     - type: human
+#       prompt: |
+#         Attack vector: {{attack_vector}}
+#         Target language: {{target_language}}
+#         Target file extension: {{target_file_extension}}
+
+#         Create a Proof-of-Concept (PoC) code for the specified "Attack vector" in the designated programming "Target language". 
+#         The code should effectively demonstrate the process of leaking confidential bytes. 
+       
+#         Please adhere to the following structured approach while composing the final code:
+#         Step 1. Write a PoC code for the Attack vector in the Target language.
+#         Step 2. Use a tool to store and compile the full proof-of-concept code in a file named "Attack vector"."Target file extension" in a folder called "PoC".
+#         Step 3. Forward the compilation output to the ProgrammerReflectionAgent and request to review the generated code, including compiler outputs.
+#         Step 4. If the ProgrammerReflectionAgent suggests any fixes or improvements, update the code accordingly and repeat the process from Step 2.
+#                 If the ProgrammerReflectionAgent is satisfied, conclude the process without further action.
+
+#         Ensure that the source file contents are included in your response.
+#         Prioritize any suggestions made by the ProgrammerReflectionAgent and ensure they are applied.
+#         Whenever you update the code, make sure to compile it again using the compilation tool.
+#         Explain the code and the expected output.
+                  
+#     - type: placeholder
+#       prompt: "{conversation}"
+

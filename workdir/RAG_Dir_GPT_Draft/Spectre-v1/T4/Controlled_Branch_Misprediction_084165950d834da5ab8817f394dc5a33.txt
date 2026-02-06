@@ -1,0 +1,22 @@
+### Article: Controlled Branch Misprediction
+
+#### Importance
+Controlled branch misprediction is a critical component in microarchitectural attacks like Spectre-v1. It leverages the speculative execution capabilities of modern processors to access data that would otherwise be protected by bounds checks. By deliberately causing the CPU to mispredict the outcome of a branch, attackers can execute instructions that access sensitive data, which can then be inferred through side-channel analysis. This component is essential for bypassing security checks and accessing out-of-bounds memory locations, making it a cornerstone of speculative execution attacks.
+
+#### Implementation Guidance
+To implement controlled branch misprediction, follow these steps:
+
+1. **Identify the Branch**: Locate the conditional branch in the victim function that checks the bounds of the array access. This is typically an `if` statement that ensures the index is within valid limits.
+
+2. **Create a Training Loop**: Design a loop that repeatedly executes the branch with a known safe index. This trains the branch predictor to expect the branch to be taken.
+
+3. **Introduce Misprediction**: After sufficient training, execute the branch with an out-of-bounds index. The branch predictor, having been trained to expect the branch to be taken, will speculatively execute the out-of-bounds access.
+
+4. **Ensure Speculative Execution**: The speculative execution path should include instructions that access sensitive data. These instructions should be dependent on the out-of-bounds index to ensure they are only executed speculatively.
+
+5. **Use a Controlled Condition**: Implement a condition that can be manipulated to control when the misprediction occurs. This can be a simple arithmetic operation or a more complex condition that depends on the loop iteration.
+
+#### Placement Guidance
+The controlled branch misprediction logic should be placed within the function that performs the speculative access. It should be positioned after the training loop and before the speculative access instructions. Ensure that the misprediction logic is tightly integrated with the speculative execution path to maximize the chances of successful data leakage.
+
+By following these guidelines, you can effectively implement controlled branch misprediction in a variety of speculative execution attacks, enhancing their ability to bypass security checks and access sensitive data.

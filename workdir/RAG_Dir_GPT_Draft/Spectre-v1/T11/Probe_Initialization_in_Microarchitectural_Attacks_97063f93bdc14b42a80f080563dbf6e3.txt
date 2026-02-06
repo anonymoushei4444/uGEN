@@ -1,0 +1,14 @@
+### Importance of Array/Probe Initialization in Microarchitectural Attacks
+
+**Importance**:  
+Array or probe initialization is a critical step in setting up a side-channel attack. It ensures that the memory accesses during speculative execution have a predictable impact on the cache state. Without proper initialization, the cache lines may not be evicted or accessed as expected, leading to unreliable timing measurements and incorrect data leakage.
+
+**Implementation Guidance**:  
+To implement array/probe initialization:
+- Initialize the array used for the side-channel (e.g., `array2`) with a known value. This can be a constant or a pattern that ensures predictable cache behavior.
+- Ensure that the initialization covers the entire array to avoid uninitialized memory accesses, which can lead to undefined behavior.
+- Use a loop to iterate over the array and set each element to the desired value.
+
+**Placement Guidance**:  
+- Place the initialization code at the beginning of the main function or before the speculative execution loop.
+- Ensure that the initialization occurs before any cache flushing or speculative execution to guarantee that the cache state is correctly set up.

@@ -1,0 +1,10 @@
+### Title: Controlled Delay (Window Extension)
+
+**Importance**:  
+The controlled delay within the speculative execution path is crucial for extending the window of speculative execution. This allows the speculative execution to affect the cache state more significantly, increasing the likelihood of successfully leaking secret data. Without this delay, the speculative execution window may be too short, leading to inconsistent or incorrect results.
+
+**Implementation Guidance**:  
+To implement a controlled delay, introduce a loop within the speculative execution path that performs a no-op operation. This loop should be designed to execute a sufficient number of iterations to extend the speculative execution window without causing excessive overhead. The number of iterations can be determined experimentally based on the specific hardware and attack scenario.
+
+**Placement Guidance**:  
+The controlled delay should be placed within the speculative execution path, immediately after the branch misprediction is triggered and before the victim function is invoked. This ensures that the delay affects the speculative execution window, allowing the cache state to be influenced more effectively.

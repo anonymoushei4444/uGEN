@@ -1,0 +1,21 @@
+**Title:** Cache Eviction Targets for Speculative Execution Control
+
+**Importance:** Cache eviction targets are essential for Spectre-style attacks as they ensure a clean state for each speculative execution attempt, preventing interference from previous iterations. Without proper cache eviction, cached data from prior attempts can influence the timing measurements, leading to false positives or reduced attack reliability. This component directly impacts the attack's ability to accurately detect speculative memory accesses by ensuring that each probe operation starts from a known cache state. Proper cache eviction is fundamental to creating the controlled conditions necessary for reliable side-channel leakage detection.
+
+**Implementation Guidance:** 
+1. Identify all critical memory targets that need eviction before each speculative execution attempt
+2. Implement systematic eviction of the probe array (array2) to ensure all cache lines are invalidated
+3. Evict control variables (such as array1_size) that influence branch prediction to ensure clean predictor state
+4. Use appropriate cache line flushing instructions (_mm_clflush) to invalidate specific memory addresses
+5. Apply eviction operations to all 256 potential probe locations to eliminate any cached access patterns
+6. Ensure eviction operations are performed immediately before each victim function invocation
+7. Verify that eviction covers both the data array and control variables that affect speculative execution
+
+**Placement Guidance:** 
+Cache eviction operations should be placed within the training loop of the readMemoryByte function, specifically before each invocation of the victim function. This placement is crucial because:
+1. Eviction must occur for each training iteration to ensure clean state for speculative execution
+2. It should be positioned immediately before the victim function call to prevent cache interference
+3. The eviction should occur after the branchless condition evaluation but before the controlled delay
+4. It must encompass both the probe array eviction and control variable eviction to ensure complete state reset
+
+Cache eviction is essential because it creates the controlled experimental conditions necessary for reliable side-channel analysis. Without proper eviction, cached data would mask the timing differences that reveal speculative memory accesses, making the attack ineffective.

@@ -1,0 +1,18 @@
+Title: Controlled Delay for Speculative Execution Window Extension
+
+Importance: 
+Controlled delay is a critical component in Spectre-style attacks that extends the speculative execution window, allowing more time for the speculative execution to complete before being cancelled. Without this delay, the speculative execution may be cancelled too quickly, preventing the secret data from being loaded into the cache and making it impossible to detect through side-channel analysis. This directly impacts the reliability and success rate of the attack.
+
+Implementation Guidance:
+1. Insert a delay loop after cache eviction and before invoking the victim function
+2. The delay should be implemented using a volatile loop to prevent compiler optimization
+3. The loop count should be tuned based on the target microarchitecture (typically 10-1000 iterations)
+4. The delay must occur in the training loop where branch misprediction is induced
+5. The delay should be placed immediately before calling the victim function to maximize the speculative window
+
+Placement Guidance:
+1. Place the delay loop within the branch predictor training loop
+2. Position it after cache eviction operations and before the victim function invocation
+3. The delay should be inside the inner training loop (j iterations) to affect each speculative attempt
+4. This placement is crucial because it ensures the delay occurs during the precise timing window when speculative execution is triggered
+5. The delay must be positioned to maximize the time between the branch misprediction and the cancellation of speculative execution

@@ -1,0 +1,19 @@
+Title: Probe and High-Resolution Timing Implementation for Cache Side-Channel Attacks
+
+Importance: 
+In cache-based side-channel attacks like Prime+Probe, the probe phase is critical for detecting cache state changes caused by victim operations. The probe function must implement high-resolution timing measurements with proper serialization to ensure accurate detection of cache hits versus misses. Without precise timing, the attack cannot distinguish between scenarios where the victim accessed shared cache sets versus when it did not, leading to false negatives or undetectable leakage. This component directly affects the reliability and correctness of the PoC by determining whether the side-channel can effectively reveal victim activity.
+
+Implementation Guidance:
+1. Use the RDTSC (Read Time-Stamp Counter) instruction for high-precision timing measurements, which provides sub-nanosecond resolution on modern processors
+2. Implement proper serialization barriers using memory fences (_mm_lfence(), _mm_mfence()) before and after timing measurements to prevent out-of-order execution from affecting results
+3. For pointer-chasing based probing, measure the time to traverse the entire eviction set linked list, as this will reveal whether any lines were evicted
+4. Ensure the timing measurement includes only the critical section being measured, excluding any setup or cleanup operations
+5. Use inline assembly constraints to prevent compiler optimizations that might eliminate timing code
+6. Add memory barriers after the measured operation to ensure completion before taking the end timestamp
+
+Placement Guidance:
+The probe function should be placed after the prime and victim operations in each measurement scenario. Specifically:
+1. After calling the prime function to load eviction set lines into cache
+2. After executing the victim function that may evict the attacker's lines
+3. Before any other operations that might affect cache state
+The probe function should be called in both Scenario A (Prime → Probe) and Scenario B (Prime → Victim → Probe) to establish a baseline and measurement comparison. The timing results from both scenarios should be accumulated separately for averaging and delta calculation. Proper placement ensures that the probe captures the cache state immediately after the victim's potential eviction activity, which is essential for detecting the side-channel signal.

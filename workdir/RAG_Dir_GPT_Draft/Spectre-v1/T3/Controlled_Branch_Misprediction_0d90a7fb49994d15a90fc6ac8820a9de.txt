@@ -1,0 +1,14 @@
+### Title: Controlled Branch Misprediction
+
+**Importance:**
+Controlled branch misprediction is a critical component in speculative execution attacks like Spectre-v1. It leverages the CPU's branch prediction mechanism to speculatively execute instructions that access secret data. By carefully crafting conditions that lead to mispredictions, attackers can manipulate the CPU to execute code paths that would not normally be taken, thereby accessing and leaking sensitive information. Without this component, the speculative execution path may not be triggered effectively, reducing the attack's success rate.
+
+**Implementation Guidance:**
+To implement controlled branch misprediction, follow these steps:
+1. **Identify the Conditional Branch**: Locate the conditional branch in the victim function that can be influenced by speculative execution.
+2. **Craft Misprediction Conditions**: Design conditions that are likely to cause the branch predictor to mispredict. This can be achieved by using patterns that the predictor has been trained to expect, such as alternating conditions or specific sequences.
+3. **Interleave with Legitimate Accesses**: Mix legitimate accesses with speculative ones to train the branch predictor. This increases the likelihood of misprediction when the speculative path is executed.
+4. **Ensure Speculative Execution**: Use loop constructs or repeated invocations to ensure the speculative path is executed multiple times, increasing the chances of successful data leakage.
+
+**Placement Guidance:**
+Insert the controlled branch misprediction logic within the loop that prepares the speculative execution environment. This should be done before invoking the victim function, ensuring the branch predictor is primed for misprediction. The logic should be interleaved with cache eviction and delay mechanisms to maximize the chances of successful speculative execution.

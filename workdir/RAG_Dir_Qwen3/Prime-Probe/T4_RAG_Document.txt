@@ -1,0 +1,29 @@
+Title: Proper Prime Function Implementation
+
+Importance: 
+The prime function is essential in Prime+Probe attacks as it ensures the attacker's cache lines occupy the targeted cache set before measuring access times. Without proper priming, the probe measurements won't accurately reflect cache state changes caused by the victim's activity. This directly impacts the reliability and correctness of the side-channel attack, as the delta between scenarios will be minimal or nonexistent.
+
+Implementation Guidance:
+1. Create a function that explicitly loads all cache lines in the eviction set into the cache
+2. Use pointer chasing or direct memory accesses to ensure all lines are resident in the cache
+3. Ensure the priming operation is complete before proceeding to the probe phase
+4. Use memory barriers or serialization instructions to prevent reordering
+
+For pointer-chase implementation:
+1. Start with the first element of the eviction set
+2. Follow the linked list through all cache lines using volatile pointer dereferences
+3. Use inline assembly to prevent compiler optimizations that might eliminate the accesses
+
+For direct access implementation:
+1. Iterate through all cache lines in the eviction set
+2. Perform volatile reads on each cache line to load them into cache
+3. Ensure memory barriers are used appropriately
+
+Placement Guidance:
+The prime function should be called immediately before each probe measurement in both scenarios:
+1. In Scenario A (Prime → Probe): Call prime function, then immediately call probe function
+2. In Scenario B (Prime → Victim → Probe): Call prime function, then execute victim function, then call probe function
+3. Place serialization instructions (memory fences) after the prime function to ensure completion before proceeding
+4. The prime function should be placed after any necessary serialization but before timing measurements begin
+
+This placement is crucial because it ensures the cache is in a known state (with attacker's lines resident) before measuring access times, which is fundamental to detecting the victim's cache evictions.

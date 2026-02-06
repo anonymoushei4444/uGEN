@@ -1,0 +1,17 @@
+### Title: Victim Function in Prime-Probe Attacks
+
+#### Importance:
+The victim function is a critical component in Prime-Probe side-channel attacks. It simulates the victim's access to the cache, which is necessary to evict the attacker's cache lines. This eviction causes a measurable change in access latency, which the attacker can detect. Without the victim function, the attack cannot demonstrate the intended cache interference, making it impossible to observe the changes in access latency that indicate the presence of a victim's activity.
+
+#### Implementation Guidance:
+To implement a victim function:
+1. **Identify the Cache Set**: Ensure that the victim accesses the same cache set as the attacker. This is crucial for causing eviction.
+2. **Access Pattern**: The victim should access its cache lines in a manner that causes eviction of the attacker's lines. This can be done by accessing the cache lines in a sequence that fills the cache set.
+3. **Repetition**: Repeat the victim's access multiple times to ensure that the cache lines are evicted. This can be controlled by a loop that iterates a predefined number of times.
+4. **Memory Access**: Use memory access instructions that ensure the cache lines are loaded into the cache. This can be done using read or write operations.
+
+#### Placement Guidance:
+- **Location**: The victim function should be placed between the prime and probe phases in Scenario B (Prime → Victim → Probe). This placement ensures that the victim's access occurs after the attacker primes the cache and before the attacker probes the cache.
+- **Justification**: Placing the victim function between the prime and probe phases is crucial because it allows the victim's access to interfere with the attacker's cache lines, causing eviction. This interference is what the attacker measures in the probe phase to detect the victim's activity.
+
+By following these guidelines, the victim function can be effectively implemented and integrated into the Prime-Probe attack, allowing for the detection of cache interference caused by the victim's activity.

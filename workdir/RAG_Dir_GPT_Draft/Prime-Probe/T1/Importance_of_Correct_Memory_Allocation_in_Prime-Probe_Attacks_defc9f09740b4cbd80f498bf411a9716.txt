@@ -1,0 +1,15 @@
+### Article: Importance of Correct Memory Allocation in Prime-Probe Attacks
+
+#### Importance:
+In microarchitectural attacks like Prime-Probe, the correct allocation of memory is crucial for the success of the attack. The attack relies on the ability to fill specific cache lines and measure the access latency to detect cache contention. If the memory is not allocated correctly, the cache lines may not map to the intended cache set, leading to inaccurate measurements and failure to detect the victim's activity.
+
+#### Implementation Guidance:
+1. **Allocate a Large, Contiguous Memory Region**: Use `mmap` to allocate a large, contiguous, page-aligned memory region. This ensures that the memory accesses map to the same cache set index.
+2. **Construct Eviction and Victim Sets**: Use the allocated memory to construct two sets of cache lines: an Eviction Set and a Victim Set, both mapping to the same L1 data cache set index.
+3. **Ensure Page Alignment**: Ensure that the memory is page-aligned to avoid any unintended cache line overlaps or misalignments.
+
+#### Placement Guidance:
+- **Before Pointer-Chase Linked List Setup**: The memory allocation should be done before setting up the pointer-chase linked lists. This ensures that the linked lists are built on the correctly allocated memory, allowing the attack to accurately prime and probe the cache.
+- **Justification**: Placing the memory allocation before the linked list setup ensures that the cache lines are correctly mapped to the intended cache set, which is crucial for the success of the attack.
+
+By following these guidelines, the memory allocation can be correctly implemented, ensuring the reliability and correctness of the Prime-Probe attack. This knowledge can be generalized and applied to other microarchitectural attacks that rely on precise memory allocation and cache set mapping.

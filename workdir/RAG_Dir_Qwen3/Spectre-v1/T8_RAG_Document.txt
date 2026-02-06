@@ -1,0 +1,21 @@
+Title: Hit/Miss Classification Threshold
+
+Importance: Hit/Miss Classification Threshold is a fundamental component in cache-based side-channel attacks that determines the accuracy of distinguishing between cache hits and misses. Without a proper threshold mechanism, the attack cannot reliably interpret timing measurements, leading to incorrect data recovery. This component is essential because it directly affects the signal-to-noise ratio of the side-channel, distinguishing between fast cache hits and slow cache misses. The threshold must be carefully calibrated to account for system variations and noise, as an incorrect threshold will result in false positives or false negatives, ultimately causing the attack to fail.
+
+Implementation Guidance:
+1. Establish a timing threshold value based on system characteristics (e.g., 80 cycles)
+2. Measure memory access time using high-resolution timers before and after access
+3. Calculate the time difference between the two measurements
+4. Compare the measured time difference against the predefined threshold
+5. Classify access as "hit" if time difference is below threshold, "miss" otherwise
+6. Exclude known safe accesses from results to prevent false positives
+7. Accumulate hit counts for each possible value to build a statistical profile
+8. Validate threshold effectiveness through calibration tests on the target system
+
+Placement Guidance:
+1. Place the hit/miss classification within the cache timing measurement loop
+2. Position the time measurement operations immediately before and after memory access
+3. Place the threshold comparison immediately after time difference calculation
+4. Ensure the classification result is used for accumulating probe results
+5. Position the safe access exclusion check within the threshold comparison logic
+6. This placement is crucial because it ensures each memory probe is properly classified before contributing to the statistical analysis, preventing contamination of results with false positives and maximizing the accuracy of the side-channel information

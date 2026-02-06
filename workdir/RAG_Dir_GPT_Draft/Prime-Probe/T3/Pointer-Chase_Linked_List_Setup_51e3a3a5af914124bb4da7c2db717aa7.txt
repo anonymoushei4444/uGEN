@@ -1,0 +1,18 @@
+### Title: Pointer-Chase Linked List Setup
+
+#### Importance
+The Pointer-Chase Linked List Setup is a crucial component in microarchitectural side-channel attacks like Prime+Probe. It ensures that the cache lines in the eviction and victim sets are accessed in a specific order, which is necessary for accurately measuring cache access latencies. Without this setup, the attack may not reliably detect the victim's cache accesses, leading to incorrect or inconclusive results.
+
+#### Implementation Guidance
+To implement the Pointer-Chase Linked List Setup, follow these steps:
+
+1. **Shuffle Indices**: Create an array of indices representing the cache lines in the set. Randomly shuffle these indices to ensure that the access pattern is not predictable.
+
+2. **Build Linked List**: Use the shuffled indices to create a linked list of cache lines. For each index, set the pointer at the beginning of the cache line to point to the next cache line in the shuffled order. This creates a pointer-chase sequence that will be used during the prime and probe phases.
+
+3. **Repeat for Both Sets**: Perform the above steps for both the eviction set and the victim set to ensure that both sets have a valid pointer-chase sequence.
+
+#### Placement Guidance
+The Pointer-Chase Linked List Setup should be placed after the eviction and victim sets have been constructed but before the main attack scenarios are executed. This placement is crucial because it ensures that the cache lines are accessed in the correct order during the prime and probe phases, allowing for accurate measurement of cache access latencies.
+
+By following these guidelines, the Pointer-Chase Linked List Setup can be effectively implemented in a variety of microarchitectural side-channel attacks, enhancing their reliability and accuracy.
