@@ -50,7 +50,8 @@ Create a folder called `workdir` in the same directory as the `docker-compose.ym
 After these setup steps, you can run the LLM toolchain by executing the following command:
 
 ```shell
-$ docker compose up --build
+$ cd uGEN
+$ ./run_uGEN --repeat <OPTIONAL> --sleep <OPTIONAL (SECOND)>
 ```
 
 This command will (re-)build the container image and start the container. If you make changes to the framework, you can rebuild the container by running the same command again.
