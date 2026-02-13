@@ -2,7 +2,7 @@
 '''
 Online Stage 
 [+] RAG
-[-] Evaluator 
+[-] Evaluator: FEEDBACK INTEGRATOR AGENT
 '''
 
 # Built-in imports
