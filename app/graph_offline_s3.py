@@ -1,8 +1,7 @@
-######################  Online Phase ##############################
+
 '''
-Online Stage 
 [+] RAG
-[-] Evaluator: FEEDBACK INTEGRATOR AGENT
+[+] Evaluator: FEEDBACK INTEGRATOR AGENT
 '''
 
 # Built-in imports
