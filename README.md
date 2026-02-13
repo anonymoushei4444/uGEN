@@ -47,7 +47,7 @@ Fill in the missing parts (`"..."`) with the appropriate values. Also, if your u
 
 Create a folder called `workdir` in the same directory as the `docker-compose.yml` file. This folder will be mounted in the container as `~/workdir` and contain the LLM-generated source code files and binaries.
 
-After these setup steps, you can run the LLM toolchain by executing the following command:
+The ```app.py``` refers to the entry-point of the framework. The user can choose target attack-vector, programming language, certain stage (S1,S2,S3,S4), victim functions by updating this file. After these setup steps, you can run the LLM toolchain by executing the following command:
 
 ```shell
 $ cd uGEN
@@ -55,6 +55,8 @@ $ ./run_uGEN --repeat <OPTIONAL> --sleep <OPTIONAL (SECOND)>
 ```
 
 This command will (re-)build the container image and start the container. If you make changes to the framework, you can rebuild the container by running the same command again.
+
+
 
 
 ## Concepts
