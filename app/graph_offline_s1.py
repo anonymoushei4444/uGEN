@@ -2,7 +2,7 @@
 '''
 Offline Stage 1: Identifying missing metrics
 [-] RAG
-[+] Evaluator 
+[+] Evaluator: GAP PROFILER AGENT
 '''
 
 # Built-in imports
