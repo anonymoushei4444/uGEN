@@ -1,7 +1,7 @@
 ######################  Offline Phase ##############################
 '''
 Offline Stage 2: Create RAG document
-[+] Evaluator --> RAG-Generator
+[+] Evaluator --> SYNTHESIZER AGENT
 '''
 
 # Built-in imports
