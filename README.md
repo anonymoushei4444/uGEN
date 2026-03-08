@@ -1,5 +1,5 @@
 # uGEN
-uGen: An Agentic Framework for Generating Microarchitectural Attack PoCs
+uGen: An Agentic Framework for Generating Microarchitectural Attack PoCs. [Paper](https://drive.google.com/file/d/1SHUC9J6UVh-h3DsATy6MRWJTux4p0ZjK/view?usp=sharing)
 
 ## Roadmap
 
