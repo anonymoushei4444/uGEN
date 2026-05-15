@@ -32,16 +32,18 @@ if [[ ! -f "$CSV_FILE" ]]; then
   echo "run,start_time,end_time,elapsed_seconds" > "$CSV_FILE"
 fi
 
-docker compose down
+docker compose down 2>/dev/null || true
 for ((i = 1; i <= REPEAT_COUNT; i++)); do
     START_TIME=$(date +"%Y-%m-%d %H:%M:%S")
     START_SEC=$(date +%s)
     echo "[$i/$REPEAT_COUNT] Starting run at $START_TIME"
 
-    docker compose up --build
-    # Wait for the app to be ready (adjust the condition as needed)
-    sleep 10
-    docker compose down
+    # Build the image first, then run container
+    docker compose build 2>&1 | grep -v "no such file or directory" || true
+    docker compose run --rm app 2>&1
+    
+    # Wait briefly after completion
+    sleep 1
     
 
     END_TIME=$(date +"%Y-%m-%d %H:%M:%S")

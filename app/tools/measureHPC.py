@@ -36,27 +36,32 @@ def measure_HPC(perf_events: list[str], state: dict[str, any] | None = None) -> 
         # Execute the command
         with do_in_workdir():
             log.info(f"[+] Running command: {' '.join(cmd)}")
-            ret = subprocess.run(cmd, capture_output=True)   
-            pass
+            ret = subprocess.run(cmd, capture_output=True, timeout=40)
+
+        stdout = ret.stdout.decode('utf-8', errors='replace')
+        stderr = ret.stderr.decode('utf-8', errors='replace')
 
         output = f"""
-        
+
         *** Execution Output Start ***
-        {ret.stdout.decode('utf-8')}
+        {stdout}
         ***Execution Output End ***
         **************************
         *** HPC Output Start ***
-        {ret.stderr.decode('utf-8')}
+        {stderr}
         *** HPC Output End ***
         """
         print(output)
-        
+
+    except subprocess.TimeoutExpired:
+        timeout_msg = f"Timeout Error: measure_HPC execution of {file_path} exceeded 40 seconds."
+        log.error(timeout_msg)
+        return '', timeout_msg
+
     except FileNotFoundError:
-        # Handle the case where the perf command is not found (e.g., not installed)
-        print("perf is not installed or not found in PATH")
-        return '', '', ''
+        log.error("perf is not installed or not found in PATH")
+        return '', ''
     except Exception as e:
-        # Handle other exceptions that may occur
-        print(f"An unexpected error occurred: {e}")
-        return '', '', ''
-    return ret.stdout.decode('utf-8'), ret.stderr.decode('utf-8')
+        log.error(f"An unexpected error occurred: {e}")
+        return '', ''
+    return stdout, stderr

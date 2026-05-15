@@ -25,6 +25,7 @@ class AgentState(TypedDict):
     programmer_evaluator_count: int
     programmer_source_code: str | None
     
+    total_nodes_executed: int      # Total graph nodes executed during run
     retrieval_questions: list[str]
     retrieval_responses: list[tuple[str,str]]
     retrieval_status: bool
@@ -35,5 +36,8 @@ class AgentState(TypedDict):
     eva_exec_done: bool            # has execute_binaries run at least once?
     eva_exec_output: str           # latest stdout/stderr from execute_binaries
     eva_decision: str | None       # "success" | "fail" (or None)
+    
+    convergence_achieved: bool     # True if Reflection Agent declares PoC is correct and satisfactory
+    final_summary: str             # Final summary message with success/incomplete status
     
     pass # end of AgentState

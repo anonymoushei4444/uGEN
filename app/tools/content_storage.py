@@ -14,6 +14,10 @@ from pydantic import BaseModel, Field # type: ignore
 from tools.file_ops import do_in_workdir, read_file, write_file
 from app_config import get_logger, config
 
+# Get UNAME from environment, default to 'anonymous' for backward compatibility
+UNAME = os.getenv('UNAME', 'anonymous')
+HOME_DIR = f"/home/{UNAME}"
+
 log = get_logger(__name__)
 
 class StoreContent(BaseModel):
@@ -44,13 +48,13 @@ def _resolve_rag_dir(state: Dict[str, Any]) -> str:
     attack_vector = state.get("attack_vector")
 
     if ("claude" in key) or ("anthropic" in key):
-        base_dir = f"/home/Anonymous/workdir/RAG_Dir_Claude_Draft/{attack_vector}"
+        base_dir = f"{HOME_DIR}/workdir/RAG_Dir_Claude_Draft/{attack_vector}"
     elif ("gpt" in key) or ("openai" in key):
-        base_dir = f"/home/Anonymous/workdir/RAG_Dir_GPT_Draft/{attack_vector}"
+        base_dir = f"{HOME_DIR}/workdir/RAG_Dir_GPT_Draft/{attack_vector}"
     elif ("qwen3-coder" in key) or ("together" in key):
-        base_dir = f"/home/Anonymous/workdir/RAG_Dir_Qwen3_Draft/{attack_vector}"
+        base_dir = f"{HOME_DIR}/workdir/RAG_Dir_Qwen3_Draft/{attack_vector}"
     else:
-        base_dir = f"/home/Anonymous/workdir/"
+        base_dir = f"{HOME_DIR}/workdir/"
         log.error(f"[resolve_rag_dir] Unknown model key '{selected_model_key}'.)")
 
     # Template number

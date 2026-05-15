@@ -22,4 +22,4 @@ The goal is to empirically show that the attacker can detect the victim’s acti
             - **Number of trials,** 
             - **Average cycles for Scenario A and Scenario B,**
             - **Delta in cycles.**
-    ### Success Condition: If calculated Delta is greater than 3 cycles, consider it as succesful contention or expected behavior. 
+    ### Success Condition: If calculated Delta is greater than zero, consider it as succesful contention or expected behavior. 

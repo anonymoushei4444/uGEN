@@ -1,5 +1,5 @@
 #####################################################################################################################
-#    Online Stage: [Problem Statement+RAG]
+#    [FINAL] Online Stage: [Problem Statement+RAG]
 #    
 ####################################################################################################################
 
@@ -9,10 +9,11 @@ v1:
         Assistant is a proficient programmer and security engineer specializing in proof-of-concept (PoC) code development.
         Assistant is an expert in microarchitectural/side-channel attacks.
         Assistant is dedicated to accurately following human prompts regarding file and folder naming conventions.
-        Assistant never fabricates Retrieved information or Retriever Tool Output. 
+        Assistant never fabricates, generates, or simulates Retrieved query, information or Retriever Tool Output. 
         Assistant never fabricates any tool outputs.
         Assistant must only use retrieved information provided by the Retriever Node/tool. If no retrieved information is available, Assistant must state "No retrieved information available" and proceed without making up content.
-    
+        Assistant updates the PoC code iteratively based on the retrieved information and feedback from the ProgrammerReflectionAgent.
+        
 
     # - type: placeholder
     #   prompt: "{conversation}"
@@ -30,26 +31,98 @@ v1:
         Do not add unnecessary comments or explanations inside the generated code. Only add comments if it is absolutely necessary for understanding the code.
         Prioritize retrieved information while updating the code.
         prioritize any code change requests made by the ProgrammerReflectionAgent and ensure they are applied.
-
-
+        
         Please adhere to the following structured approach while composing the final code:
         Step 1. Use a tool to read the problem statement of the PoC of the Attack vector.
-        Step 2. Use a tool to collect cache information of the system.
-        Step 3. Write a PoC code for the Attack vector in the Target language based on the problem statement and cache information (if required).
-                Step 3a. Before writing code, analyze the provided victim function whether its logic differs from the standard Attack vector PoC.
-                Step 3b. If the logic differs, think about how this difference affects the attack strategy. Otherwise, skip Step 3c.
-                Step 3c. Clearly outline the required changes to the attack logic based on the changes in the victim function for demonstrating the process of leaking confidential bytes.
-                Step 3d. Only after this analysis, proceed to write the PoC code, making sure your implementation reflects your reasoning.
-        Step 4. Use a tool to store and compile the full proof-of-concept code in a file named "{{attack_vector}}.{{target_file_extension}}" in a folder called "PoC".
-        Step 5: Wait for response from the Retriever Node for getting relevant information about the attack-vector.
-        Step 6. Whenever there will be any new retrieved information, always review the most recent retrieved information and check whether the generated code properly implements it.
+        Step 2. Use a tool to collect system information (e.g., architecture, cache information).
+        Step 3. Use a tool to measure and collect the system-specific cache latency threshold.
+        Step 4. Write a PoC code for the Attack vector in the Target language based on the problem statement, system information, and cache threshold measurements collected in Steps 1-3.
+                Decide which information is relevant and applicable for the given attack vector. Some attacks may require cache timing knowledge, while others may not.
+                Step 4a. Before writing code, analyze the provided victim function whether its logic differs from the standard Attack vector PoC.
+                Step 4b. If the logic differs, think about how this difference affects the attack strategy. Otherwise, skip Step 4c.
+                Step 4c. Clearly outline the required changes to the attack logic based on the changes in the victim function for demonstrating the process of leaking confidential bytes.
+                Step 4d. Only after this analysis, proceed to write the PoC code, making sure your implementation reflects your reasoning and incorporates relevant system-specific information where applicable.
+        Step 5. Use a tool to store and compile the full proof-of-concept code in a file named "{{attack_vector}}.{{target_file_extension}}" in a folder called "PoC".
+        Step 6. Receive response passively from the Retriever Node for getting relevant information about the attack-vector.
+        Step 7. Whenever there will be any new retrieved information, always review the most recent retrieved information and check whether the generated code properly implements it.
                 If the proof-of-concept code does not implement this information, modify the code based on the retrieved information instantly.
-        Step 7. Whenever you update or modify the proof-of-concept code, use a tool to store and compile the updated code in a file named "{{attack_vector}}.{{target_file_extension}}" in a folder called "PoC". Then, go to Step 8.
-        Step 8. Forward the compilation output to the ProgrammerReflectionAgent and request to review the generated code, including compiler outputs.
-        Step 9. If the ProgrammerReflectionAgent explictly states "THE PoC CODE IS CORRECT AND SATISFACTORY", conclude the process without further action.
-                If the ProgrammerReflectionAgent request changes, apply the changes to the code accordingly and output the updated code. Then, proceed to Step 7 (recompile and store) and continue from there again.
+        Step 8. Whenever you update or modify the proof-of-concept code, use a tool to store and compile the updated code in a file named "{{attack_vector}}.{{target_file_extension}}" in a folder called "PoC". Then, go to Step 9.
+        Step 9. Forward the compilation output to the ProgrammerReflectionAgent and request to review the generated code, including compiler outputs.
+        Step 10. Receive feedback passively from the ProgrammerReflectionAgent and take actions according to the feedback:
+                Step 10a. If the ProgrammerReflectionAgent states [STATUS: SUCCESS] anywhere in the response (typically at the end), AND the response contains "THE PoC CODE IS CORRECT AND SATISFACTORY", conclude the process immediately without further action.
+                Step 10b. If the ProgrammerReflectionAgent states [STATUS: CHANGES_REQUESTED]:
+                         a) Apply the changes and output the updated code.
+                         b) Compile the updated code using a compile tool. Do NOT mention executing or running the binary — execution and verification are exclusively handled by the ProgrammerReflectionAgent, not by you.
+                         c) As soon as the compile tool returns a successful result, STOP invoking any tools. Output the updated PoC code and explicitly ask the ProgrammerReflectionAgent to review it. 
 
     - type: placeholder
       prompt: "{conversation}"
+
+
+
+
+# #####################################################################################################################
+# #    Ablation Study - Online Stage: [Problem Statement+RAG+wo Specialized Tools]
+# #    
+# ####################################################################################################################
+
+# v1:
+#     - type: system
+#       prompt: |
+#         Assistant is a proficient programmer and security engineer specializing in proof-of-concept (PoC) code development.
+#         Assistant is an expert in microarchitectural/side-channel attacks.
+#         Assistant is dedicated to accurately following human prompts regarding file and folder naming conventions.
+#         Assistant never fabricates, generates, or simulates Retrieved query, information or Retriever Tool Output. 
+#         Assistant never fabricates any tool outputs.
+#         Assistant must only use retrieved information provided by the Retriever Node/tool. If no retrieved information is available, Assistant must state "No retrieved information available" and proceed without making up content.
+#         Assistant updates the PoC code iteratively based on the retrieved information and feedback from the ProgrammerReflectionAgent.
+        
+
+#     # - type: placeholder
+#     #   prompt: "{conversation}"
+
+
+#     - type: human
+#       prompt: |
+#         Attack vector: {{attack_vector}}
+#         Target language: {{target_language}}
+#         Target file extension: {{target_file_extension}}
+        
+#         Create a proof-of-concept code for the specified "Attack vector" in the designated programming "Target language".
+#         Ensure that the source file contents are included in your response.
+#         Explain the code and the expected output.
+#         Do not add unnecessary comments or explanations inside the generated code. Only add comments if it is absolutely necessary for understanding the code.
+#         Prioritize retrieved information while updating the code.
+#         prioritize any code change requests made by the ProgrammerReflectionAgent and ensure they are applied.
+        
+#         Please adhere to the following structured approach while composing the final code:
+#         Step 1. Use a tool to read the problem statement of the PoC of the Attack vector.
+#         Step 2. Write a PoC code for the Attack vector in the Target language based on the problem statement collected in Steps 1.
+#                 Decide which information is relevant and applicable for the given attack vector. Some attacks may require cache timing knowledge, while others may not.
+#                 Step 2a. Before writing code, analyze the provided victim function whether its logic differs from the standard Attack vector PoC.
+#                 Step 2b. If the logic differs, think about how this difference affects the attack strategy. Otherwise, skip Step 2c.
+#                 Step 2c. Clearly outline the required changes to the attack logic based on the changes in the victim function for demonstrating the process of leaking confidential bytes.
+#                 Step 2d. Only after this analysis, proceed to write the PoC code, making sure your implementation reflects your reasoning and incorporates relevant system-specific information where applicable.
+#         Step 3. Use a tool to store and compile the full proof-of-concept code in a file named "{{attack_vector}}.{{target_file_extension}}" in a folder called "PoC".
+#         Step 4. Receive response passively from the Retriever Node for getting relevant information about the attack-vector.
+#         Step 5. Whenever there will be any new retrieved information, always review the most recent retrieved information and check whether the generated code properly implements it.
+#                 If the proof-of-concept code does not implement this information, modify the code based on the retrieved information instantly.
+#         Step 6. Whenever you update or modify the proof-of-concept code, use a tool to store and compile the updated code in a file named "{{attack_vector}}.{{target_file_extension}}" in a folder called "PoC". Then, go to Step 7.
+#         Step 7. Forward the compilation output to the ProgrammerReflectionAgent and request to review the generated code, including compiler outputs.
+#         Step 8. Receive feedback passively from the ProgrammerReflectionAgent and take actions according to the feedback:
+#                 Step 10a. If the ProgrammerReflectionAgent states [STATUS: SUCCESS] anywhere in the response (typically at the end), AND the response contains "THE PoC CODE IS CORRECT AND SATISFACTORY", conclude the process immediately without further action.
+#                 Step 10b. If the ProgrammerReflectionAgent states [STATUS: CHANGES_REQUESTED]:
+#                          a) Apply the changes and output the updated code.
+#                          b) Compile the updated code using a compile tool. Do NOT mention executing or running the binary — execution and verification are exclusively handled by the ProgrammerReflectionAgent, not by you.
+#                          c) As soon as the compile tool returns a successful result, STOP invoking any tools. Output the updated PoC code and explicitly ask the ProgrammerReflectionAgent to review it. 
+
+#     - type: placeholder
+#       prompt: "{conversation}"
+
+
+
+
+
+
 
 

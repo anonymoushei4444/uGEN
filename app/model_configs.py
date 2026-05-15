@@ -9,6 +9,10 @@ models = {
             "temperature": 0,
             "api_key": os.getenv("OPENAI_API_KEY"),
             "base_url": os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+            "thinking": {
+                "type": "enabled",
+                "budget_tokens": 8000  # Adjust based on your needs (1000-10000)
+            }
         }
     },
     "gpt-5": {
@@ -75,6 +79,24 @@ models = {
             "temperature": 0,
             "api_key": os.getenv("ANTHROPIC_API_KEY"),
             "base_url": os.getenv("ANTHROPIC_BASE_URL", "https://api.anthropic.com/v1"),
+            "thinking": {
+                "type": "enabled",
+                "budget_tokens": 8000  # Adjust based on your needs (1000-10000)
+            }
+        }
+    },
+
+    "claude-sonnet-4.6": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-4-6",
+        "args": {
+            "temperature": 0,
+            "api_key": os.getenv("ANTHROPIC_API_KEY"),
+            "base_url": os.getenv("ANTHROPIC_BASE_URL", "https://api.anthropic.com/v1"),
+            "thinking": {
+                "type": "enabled",
+                "budget_tokens": 8000  # Adjust based on your needs (1000-10000)
+            }
         }
     },
     "Qwen3-Coder": {
@@ -85,6 +107,9 @@ models = {
             "api_key": os.getenv("TOGETHER_API_KEY"),
             "base_url": os.getenv("TOGETHER_BASE_URL", "https://api.together.xyz/v1"),
             "max_tokens": 32000,
+            "thinking": {
+                "type": "enabled",
+            }
         }
     }
 }

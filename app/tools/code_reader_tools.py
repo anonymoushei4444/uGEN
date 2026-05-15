@@ -15,6 +15,10 @@ from pydantic import BaseModel, Field # type: ignore
 from app_config import get_logger, config
 from agents.AgentState import AgentState
 
+# Get UNAME from environment, default to 'anonymous' for backward compatibility
+UNAME = os.getenv('UNAME', 'anonymous')
+HOME_DIR = f"/home/{UNAME}"
+
 log = get_logger(__name__)
 
 class SourceCodeReader(BaseModel):
@@ -50,7 +54,7 @@ def source_code_reader(state: Dict[str, Any] | None = None) -> dict[str]:
 
 
     ####### Ground Truth   ##############
-    src_code_dir = "/home/Anonymous/app/src_code_dir"
+    src_code_dir = f"{HOME_DIR}/app/src_code_dir"
     file_path_ground_truth = os.path.join(src_code_dir, file_name)
 
     if not file_path_ground_truth:
@@ -85,7 +89,7 @@ def template_code_reader(state: Dict[str, Any] | None = None) -> dict[str]:
     file_name = f"T{template_number}_{attack_vector}.{target_file_extension}"
 
     ####### Template Code   ##############
-    template_code_dir = f"/home/Anonymous/app/template_code_dir/{attack_vector}"
+    template_code_dir = f"{HOME_DIR}/app/template_code_dir/{attack_vector}"
     file_path_template_code = os.path.join(template_code_dir, file_name)
 
     if not file_path_template_code:
@@ -121,7 +125,7 @@ def read_problem_statement(state: Dict[str, Any] | None = None) -> dict[str]:
 
 
     ####### Test Code   ##############
-    prob_statement_dir = "/home/Anonymous/app/prob_statement_dir"
+    prob_statement_dir = f"{HOME_DIR}/app/prob_statement_dir"
     file_path_prob_statement = os.path.join(prob_statement_dir, file_name)
 
     if not file_path_prob_statement:

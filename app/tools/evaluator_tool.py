@@ -12,6 +12,10 @@ from pydantic import BaseModel, Field # type: ignore
 from tools.file_ops import do_in_workdir, read_file, write_file
 from app_config import get_logger
 
+# Get UNAME from environment, default to 'anonymous' for backward compatibility
+UNAME = os.getenv('UNAME', 'anonymous')
+HOME_DIR = f"/home/{UNAME}"
+
 log = get_logger(__name__)
 
 class EvaluationMetricsReader(BaseModel):
@@ -43,7 +47,7 @@ def evaluation_metrics_reader(state: dict[str, Any]| None = None) -> dict[str]:
     attack_vector= state.get("attack_vector")
     file_name = f"{attack_vector}-Evaluation-Metrics.txt"
     ####### Directory for Evaluation Resources   ##############
-    eval_dir = "/home/Anonymous/app/eval_dir"
+    eval_dir = f"{HOME_DIR}/app/eval_dir"
     file_eval_metrics = os.path.join(eval_dir, file_name)
 
     if not file_eval_metrics:

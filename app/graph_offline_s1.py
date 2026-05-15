@@ -35,7 +35,7 @@ from tools.executor import execute_binaries
 from tools.code_reader_tools import source_code_reader, read_problem_statement
 from tools.content_storage import store_content, save_missing_metrics
 from tools.evaluator_tool import evaluation_metrics_reader
-from tools.extract_cache_info import collect_cacheinfo
+from tools.extract_system_info import collect_system_info
 
 
 # Factory + model registry
@@ -119,7 +119,7 @@ class MainGraph():
     def _get_programmer_agent(self) -> ProgrammerAgent:
         prog_name    = 'ProgrammerAgent0'
         prog_version = 'v1'
-        prog_tools   = [read_problem_statement, collect_cacheinfo, compile_rust, compile_C, compile_CPP]
+        prog_tools   = [read_problem_statement, collect_system_info, compile_rust, compile_C, compile_CPP]
         return ProgrammerAgent(
             llm     = self.llm,
             name    = prog_name,

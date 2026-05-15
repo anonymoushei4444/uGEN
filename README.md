@@ -1,106 +1,197 @@
-# uGEN
-uGen: An Agentic Framework for Generating Microarchitectural Attack PoCs. [Paper](https://drive.google.com/file/d/1SHUC9J6UVh-h3DsATy6MRWJTux4p0ZjK/view?usp=sharing)
+# uGen — Agentic PoC Generation for Microarchitectural Attacks
 
-## Roadmap
+uGen is an agentic framework that automatically generates, compiles, executes, and validates microarchitectural attack proof-of-concept (PoC) code using LLM agents, RAG-augmented retrieval, and iterative self-reflection.
 
-Tools:
-- [x] C/C++ compiler
-- [x] Rust compiler
-- [x] Binary executor
-- [x] Performance counter reader
-- [x] Cache architecture reader
-- [x] RAG Retreiver Tool
-- [x] File r/w Tools
+📄 [Paper](https://drive.google.com/file/d/1SHUC9J6UVh-h3DsATy6MRWJTux4p0ZjK/view?usp=sharing)
 
-LLM providers:
-- [x] [OpenAI](https://python.langchain.com/v0.2/docs/integrations/platforms/openai/)
-- [x] [Anthropic](https://python.langchain.com/v0.2/docs/integrations/platforms/anthropic/)
-- [x] [GPT4o](https://python.langchain.com/v0.2/docs/integrations/providers/)
-- [x] [Qwen3-Coder](https://docs.together.ai/docs/integrations#langchain)
+---
 
-Chat models:
-- OpenAI
-    - [x] GPT-4o
-- Anthropic
-    - [x] Claude-4-Sonnet
-- Qwen
-    - [x] Qwen3-Coder
+## Supported Attack Vectors
+
+- Spectre-v1
+- Prime+Probe
+
+## Evaluated Models
+
+| Key | Provider | Model |
+|-----|----------|-------|
+| `gpt-4o` | OpenAI | GPT-4o |
+| `claude-sonnet-4` | Anthropic | Claude Sonnet 4 |
+| `Qwen3-Coder` | Together AI | Qwen3-Coder-480B |
+
+---
+
+## Prerequisites
+
+- [Docker Engine](https://docs.docker.com/engine/install/) with the Compose plugin
+- Linux host with `PERFMON` capability (required for hardware performance counters)
+- API key for your chosen model provider (see below)
+
+---
+
+## API Keys
+
+Only the key for your chosen provider is required. **`OPENAI_API_KEY` is not needed unless you are running GPT-4o** — Claude and Qwen3-Coder use a local embedding model (`BAAI/bge-small-en-v1.5`) that is pre-baked into the Docker image.
+
+| Model | Required key |
+|-------|-------------|
+| `gpt-4o` | `OPENAI_API_KEY` |
+| `claude-sonnet-4` | `ANTHROPIC_API_KEY` |
+| `Qwen3-Coder` | `TOGETHER_API_KEY` |
+
+---
 
 ## Setup
 
-The LLM framework is containerized to ease dependency management and code execution. Make sure that you have [Docker Engine](https://docs.docker.com/engine/install/) including the Docker Compose plugin installed on your system.
-
-Create a `.env` file in the same directory as the `docker-compose.yml` file with the following content:
-
-```env
-OPENAI_API_KEY="..."
-TOGETHER_API_KEY="..."
-ANTHROPIC_API_KEY="..."
-LANGCHAIN_API_KEY="..."
-LANGCHAIN_PROJECT="..."
-UNAME="anonymous"
-```
-
-The `LANDCHAIN_*` variables are optional and only required if you want to use [LangSmith](https://smith.langchain.com) to track the execution of your code. The `OPENAI_API_KEY` variable is required if you want to use the OpenAI API to generate code. The `UNAME`, `UID`, and `GID` variables are required to ensure that the files created in the container are owned by the correct user and group.
-
-Fill in the missing parts (`"..."`) with the appropriate values. Also, if your user and group ID is not `1000`, change the `UID` and `GID` values accordingly. The files created in the container will be owned by the user with the specified UID and GID.
-
-Create a folder called `workdir` in the same directory as the `docker-compose.yml` file. This folder will be mounted in the container as `~/workdir` and contain the LLM-generated source code files and binaries.
-
-The ```app.py``` refers to the entry-point of the framework. The user can choose target attack-vector, programming language, certain stage (S1,S2,S3,S4), victim functions by updating this file. After these setup steps, you can run the LLM toolchain by executing the following command:
-
-```shell
-$ cd uGEN
-$ ./run_uGEN --repeat <OPTIONAL> --sleep <OPTIONAL (SECOND)>
-```
-
-This command will (re-)build the container image and start the container. If you make changes to the framework, you can rebuild the container by running the same command again.
-
-
-
-
-## Concepts
-
-An *agent* is an LLM instance associated with a prompt template and a list of accessible tools.
-An *agent input* is used to fill in the agent's prompt template.
-A *tool* is a Python function that can be called by an agent to interact with the system it is running on.
-
-
-## Deployment Stage: S4
-
-The architecture consists of multiple LLM agents that play different roles and interact with each other and the system.
-
-The current implementation of the framework consists of the following agents:
-1. **Programmer Agent:** The agent is tasked with generating a PoC for a given attack vector and programming language. The programmer agent forwards the generated code to the programmer agent tools to compile the code.
-2. **Programmer Agent Tools:** The tools provide the ability for the programmer agent to interact with the system it is running on. The output of the tools is passed on to the programmer agent.
-3. **Programmer Reflection Agent:** The agent is tasked with analyzing the output of the programmer agent and its tools and generating feedback. The feedback is fed back to the programmer agent to improve the generated code.
-4. **Reflector Agent Tools:** The tools provide the ability for the reflector agent to interact with the system it is running on. The output of the tools is passed on to the reflection agent.
-
-
-## Implementation
-
-The framework is implemented in Python. It uses [LangChain](https://python.langchain.com/v0.2/docs/introduction/) to access LLM agents and model their interaction as a graph where the nodes represent agents and the tools that they have access to and the edges represent the allowed communication channels. The graph is modeled with [LangGraph](https://langchain-ai.github.io/langgraph/).
-
-The source code is located in the `app` folder, which currently has the following structure:
+**1. Create your `.env` file**
 
 ```bash
-app/ # Root folder for the LLM framework
-├── agents/ # Contains the agents
-│   ├── programmer/ # Contains all agents
-│   ├── prompts/ # Contains all prompts
-│   ├── BaseAgent.py # The base class for all agents
-│   ├── BaseReflectionAgent.py # The base class for all reflection agents
-│   ├── BaseInput.py # The base class for all agent inputs
-│   ├── AgentState.py # The state that is used to pass information between agents
-├── tools/ # Contains the tools that the agents have access to
-├── app_config.py # The state/configuration of the application
-├── model_configs.py # The LLM models to be tested
-├── llm_factory.py
-├── graph_offline_s1.py # The graph that models the agents and their interactions
-├── graph_offline_s2.py
-├── graph_offline_s3.py
-├── graph_offline_s4.py
-├── app.py # The entry point of the framework
+cp .env.example .env
 ```
 
+Open `.env` and fill in the key for your chosen provider. Set `UNAME` to your Linux username so that files created inside the container are owned by you. If your UID/GID is not `1000`, update those values accordingly.
 
+```env
+# Example for Claude
+ANTHROPIC_API_KEY="sk-ant-..."
+UNAME="your-linux-username"
+UID=1000
+GID=1000
+```
+
+**2. Create the workdir mount**
+
+```bash
+mkdir -p workdir
+```
+
+The container mounts `./workdir` as `~/workdir` inside the container. All generated source code, compiled binaries, and execution logs are written here.
+
+---
+
+## Running the Deployment Stage (S4)
+
+> S4 is the primary end-to-end stage. Given a problem statement and a curated RAG knowledge base, it autonomously generates, compiles, executes, and validates a PoC binary — no manual intervention needed after launch.
+
+### Step 1 — Configure `app/app.py`
+
+Open `app/app.py` and set the two manual selection lines near the top of the `if __name__ == '__main__':` block:
+
+```python
+# ============ MANUAL PHASE SELECTION ============
+SELECTED_PHASE = "Online"        # Keep as "Online" for S4
+# ================================================
+
+# ============ MANUAL MODEL SELECTION ============
+SELECTED_MODEL_KEY = "claude-sonnet-4"   # "gpt-4o" | "claude-sonnet-4" | "Qwen3-Coder"
+# ===============================================
+```
+
+Then set the attack parameters a few lines below:
+
+```python
+config.ATTACK_VECTORS        = 'Spectre-v1'   # "Spectre-v1" | "Prime-Probe"
+config.TARGET_LANGUAGES      = 'C'
+config.TARGET_FILE_EXTENSION = 'c'
+config.VICTIM_FUNCTION       = 1              # victim function variant (1 = default)
+config.TEMPLATE_NUMBER       = 3              # evaluation template number (3–11)
+```
+
+Retrieval questions are selected **automatically** from `app/retrieval_queries.py` based on your model and attack vector — no manual editing needed.
+
+### Step 2 — Build and run
+
+```bash
+./run_uGEN.sh
+```
+
+To run multiple times with a pause between runs:
+
+```bash
+./run_uGEN.sh --repeat 5 --sleep 60
+```
+
+The script calls `docker compose build` then `docker compose run --rm app` on each iteration. Wall-clock time per run is appended to `run_times.csv`.
+
+> **Note:** The first build downloads and caches the local embedding model (~130 MB) inside the Docker image. Subsequent builds reuse the cache and are fast.
+
+### Step 3 — Monitor progress
+
+The run UUID is printed at startup. Stream the log live with:
+
+```bash
+tail -f workdir/logs/<UUID>.log
+```
+
+### Step 4 — Collect output
+
+```
+workdir/<UUID>/PoC/<attack_vector>.<ext>   # Generated source code
+workdir/<UUID>/PoC/<attack_vector>         # Compiled binary
+workdir/logs/<UUID>.log                    # Full execution log
+run_times.csv                              # Wall-clock time per run
+```
+
+A final summary is printed to stdout when the run completes, reporting whether the PoC converged successfully or hit the time/iteration limit.
+
+---
+
+## How S4 Works
+
+S4 runs a LangGraph state machine. The control flow is:
+
+```
+START → [Programmer]
+          ├─ tool_calls?              → [ProgrammerTools]  → [Programmer]
+          ├─ retrieval queries left?  → [Retriever]        → [Programmer]
+          └─ otherwise               → [Reflection]
+                ├─ tool_calls?        → [ReflectionTools]  → [Reflection]
+                ├─ converged or limit → [FinalSummary]     → END
+                └─ otherwise          → [Programmer]
+```
+
+**Programmer Agent** generates and iteratively refines the PoC code. Tools available: `read_problem_statement`, `compile_C`, `compile_CPP`, `compile_rust`.
+
+**Retriever Node** answers the curated retrieval queries one by one from the Chroma vector store before each handoff to Reflection. Results are injected as `HumanMessage` objects so the LLM treats them as external context rather than its own prior output.
+
+**Reflection Agent** executes the compiled binary, reads hardware performance counters, and returns structured feedback (`[STATUS: CHANGES_REQUESTED]` or `[STATUS: SUCCESS]`). Tools available: `compile_C`, `compile_CPP`, `compile_rust`, `execute_binaries`.
+
+**Convergence** is declared when the Reflection Agent emits `[STATUS: SUCCESS]`, confirmed by the phrase `"THE PoC CODE IS CORRECT AND SATISFACTORY"` appearing near the end of its response with positive surrounding context.
+
+**Termination** occurs at convergence, when the maximum reflection count (`PROG_REF_CNT`) is exceeded, or when the wall-clock timeout (`TIMEOUT_SECONDS`) is reached — whichever comes first.
+
+---
+
+## Tuning (`app/app_config.py`)
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `PROG_REF_CNT` | `8` | Max Reflection agent iterations before forced termination |
+| `TIMEOUT_SECONDS` | `3000` | Wall-clock limit in seconds (50 min) |
+| `RECURSION_LIMIT` | `15` | LangGraph node execution cap |
+| `LLM_NODE_DELAY_SECONDS` | `0` | Sleep before each LLM call; increase if hitting TPM rate limits |
+
+---
+
+## Four-Stage Pipeline
+
+uGen is structured as a four-stage pipeline. **S4 (Deployment) is the primary stage** and can be run standalone using the pre-built RAG documents included in this repository.
+
+| Stage | Graph file | Purpose | RAG | Evaluator |
+|-------|-----------|---------|:---:|:---------:|
+| S1 | `graph_offline_s1.py` | Identify knowledge gaps | — | Gap Profiler |
+| S2 | `graph_offline_s2.py` | Generate RAG documents | ✓ | Synthesizer |
+| S3 | `graph_offline_s3.py` | Validate and refine RAG docs | ✓ | Validator |
+| **S4** | `graph_online_s4.py` | **Deploy — generate PoC** | ✓ | — |
+
+Stages S1–S3 are offline preparation steps. Their outputs (the `workdir/RAG_Dir_*/` documents) are already included in this repository for all supported model/attack combinations, so you can **run S4 directly** without going through the offline stages.
+
+---
+
+## Adding a New LLM Model
+
+Three files must be updated:
+
+1. **`app/model_configs.py`** — add an entry to the `models` dict with `provider`, `model`, and `args`.
+2. **`app/tools/retriever_llm.py`** — add a branch in `get_cache_and_doc_dir()` so the new model gets its own RAG store under `workdir/RAG_Dir_{Family}/{attack_vector}/`.
+3. **`app/retrieval_queries.py`** — add curated retrieval questions for the new model family and attack vector combination.

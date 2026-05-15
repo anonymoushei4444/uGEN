@@ -13,6 +13,10 @@ from pydantic import BaseModel, Field # type: ignore
 from tools.file_ops import do_in_workdir, read_file, write_file
 from app_config import get_logger, config
 
+# Get UNAME from environment, default to 'anonymous' for backward compatibility
+UNAME = os.getenv('UNAME', 'anonymous')
+HOME_DIR = f"/home/{UNAME}"
+
 log = get_logger(__name__)
 
 class FeedbackReader(BaseModel):
@@ -42,7 +46,7 @@ def get_feedback_dir(selected_model_key: str, attack_vector: str, template_numbe
         model_dir = "Qwen3"
     else:
         model_dir = "None"  # Default fallback
-    feedback_dir = f"/home/Anonymous/app/Expert_Feedback/{model_dir}/{attack_vector_dir}/T{template_number}"
+    feedback_dir = f"{HOME_DIR}/app/Expert_Feedback/{model_dir}/{attack_vector_dir}/T{template_number}"
     return feedback_dir
 
 def get_rag_dir(selected_model_key: str, attack_vector: str) -> str:
@@ -51,11 +55,11 @@ def get_rag_dir(selected_model_key: str, attack_vector: str) -> str:
     # Normalize attack vector for directory naming
     attack_vector_dir = attack_vector.replace(" ", "-")
     if "claude" in key or "anthropic" in key:
-        model_dir = "/home/Anonymous/workdir/RAG_Dir_Claude"
+        model_dir = f"{HOME_DIR}/workdir/RAG_Dir_Claude"
     elif "gpt" in key or "openai" in key or "4o" in key:
-        model_dir = "/home/Anonymous/workdir/RAG_Dir_GPT"
+        model_dir = f"{HOME_DIR}/workdir/RAG_Dir_GPT"
     elif "qwen3-coder" in key or "together" in key:
-        model_dir = "/home/Anonymous/workdir/RAG_Dir_Qwen3"
+        model_dir = f"{HOME_DIR}/workdir/RAG_Dir_Qwen3"
     else:
         model_dir = "None"  # Default fallback
         log.error(f"[get_rag_dir] Unknown model key '{key}'.)")
@@ -84,7 +88,7 @@ def read_feedback(file_contents: str, state: Dict[str, Any] | None = None) -> di
 
     
     ####### Directory for Feedback Resources   ##############
-    # feedback_dir = f"/home/Anonymous/app/Expert_Feedback/GPT-4o/T{template_number}"
+    # feedback_dir = f"{HOME_DIR}/app/Expert_Feedback/GPT-4o/T{template_number}"
     feedback_dir = get_feedback_dir(selected_model_key, attack_vector, template_number)
     file_feedback = os.path.join(feedback_dir, file_name)
 
@@ -119,7 +123,7 @@ def read_rag_document(file_contents: str, state: Dict[str, Any] | None = None) -
     file_name = f"T{template_number}_RAG_Document.txt"
     
     ####### Directory for RAG Resources   ##############
-    # rag_dir = "/home/Anonymous/workdir/RAG_Dir_GPT"
+    # rag_dir = f"{HOME_DIR}/workdir/RAG_Dir_GPT"
     rag_dir = get_rag_dir(selected_model_key, attack_vector)
     file_rag = os.path.join(rag_dir, file_name)
 
@@ -148,7 +152,7 @@ def store_rag_document(file_contents: str, state: Dict[str, Any] | None = None):
     
     file_name = f"T{template_number}_RAG_Document.txt"
     ####### Directory for RAG Resources   ##############
-    # rag_dir = "/home/Anonymous/workdir/RAG_Dir_GPT"
+    # rag_dir = f"{HOME_DIR}/workdir/RAG_Dir_GPT"
     rag_dir = get_rag_dir(selected_model_key, attack_vector)
     file_rag = os.path.join(rag_dir, file_name)
 

@@ -17,7 +17,12 @@ RUN apt-get install -y --no-install-recommends \
     pkg-config \
     libelf-dev \
     libtraceevent-dev \
-    curl 
+    curl \
+    util-linux \
+    gcc-arm-linux-gnueabihf \
+    gcc-aarch64-linux-gnu \
+    binutils-arm-linux-gnueabihf \
+    binutils-aarch64-linux-gnu 
 
 
 
@@ -71,14 +76,30 @@ RUN pip install --upgrade pip
 # RUN pip install --user --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Pre-download the local embedding model so the first run doesn't stall on a download
+RUN python3 -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-small-en-v1.5')"
+
 # Copy the application files
 COPY app .
+
+# Create entrypoint script for CPU affinity
+RUN mkdir -p /home/${UNAME}/bin
+USER root
+RUN cat > /home/${UNAME}/bin/entrypoint.sh << 'EOF'
+#!/bin/bash
+# Apply CPU affinity to cores 2,3,4,5 and run the application
+taskset -c 2,3,4,5 python3 app.py
+EOF
+RUN chmod +x /home/${UNAME}/bin/entrypoint.sh
+RUN chown ${UID}:${GID} /home/${UNAME}/bin/entrypoint.sh
+
+USER ${UNAME}
 
 # Set Rust path for the non-root user
 # ENV PATH="/usr/local/cargo/bin:$PATH"
 # RUN /usr/local/cargo/bin/rustup default stable
 
-CMD ["python3", "app.py"]
+ENTRYPOINT ["/bin/bash", "-c", "taskset -c 2,3,4,5 python3 app.py"]
 
 
 

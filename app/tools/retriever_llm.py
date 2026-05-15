@@ -6,6 +6,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter # type: igno
 from typing_extensions import List, TypedDict # type: ignore
 from langchain_core.vectorstores import InMemoryVectorStore # type: ignore
 from langchain_openai import OpenAIEmbeddings # type: ignore
+from langchain_community.embeddings import HuggingFaceEmbeddings # type: ignore
 from langchain_community.document_loaders.pdf import PyMuPDFLoader # type: ignore
 from langchain_community.document_loaders.text import TextLoader # type: ignore
 from langchain_community.document_loaders.html_bs import BSHTMLLoader # type: ignore
@@ -19,6 +20,11 @@ from pydantic import BaseModel, Field # type: ignore
 import tiktoken
 import re
 import os
+
+# Get UNAME from environment, default to 'anonymous' for backward compatibility
+UNAME = os.getenv('UNAME', 'anonymous')
+HOME_DIR = f"/home/{UNAME}"
+import os
 import pickle
 from pathlib import Path
 import numpy as np
@@ -29,35 +35,42 @@ from app_config import get_logger
 log = get_logger(__name__)
 
 # Define cache directory and file path
-# CACHE_DIR = Path("/home/Anonymous/workdir/RAG_Dir_GPT/.chroma_db")
-# CACHE_DIR = Path("/home/Anonymous/workdir/RAG_Dir_Claude/.chroma_db")
+# CACHE_DIR = Path(f"{HOME_DIR}/workdir/RAG_Dir_GPT/.chroma_db")
+# CACHE_DIR = Path(f"{HOME_DIR}/workdir/RAG_Dir_Claude/.chroma_db")
+
+def get_embeddings(model_key: str):
+    key = (model_key or "").lower()
+    if "gpt" in key or "openai" in key or "4o" in key:
+        return OpenAIEmbeddings(model="text-embedding-3-large")
+    return HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+
 
 def get_cache_and_doc_dir(selected_model_key: str, attack_vector: str):
     key = (selected_model_key or "").lower()
     attack_vector = (attack_vector or "").strip()
     # Expandable mapping-by-substring (add 'llama', 'deepseek', etc. as you add stores)
     if "claude" in key or "anthropic" in key:
-        cache_dir = Path(f"/home/Anonymous/workdir/RAG_Dir_Claude/{attack_vector}/.chroma_db")
-        doc_dir = f"/home/Anonymous/workdir/RAG_Dir_Claude/{attack_vector}"
+        cache_dir = Path(f"{HOME_DIR}/workdir/RAG_Dir_Claude/{attack_vector}/.chroma_db")
+        doc_dir = f"{HOME_DIR}/workdir/RAG_Dir_Claude/{attack_vector}"
     elif "gpt" in key or "openai" in key or "4o" in key:
-        cache_dir = Path(f"/home/Anonymous/workdir/RAG_Dir_GPT/{attack_vector}/.chroma_db")
-        doc_dir = f"/home/Anonymous/workdir/RAG_Dir_GPT/{attack_vector}"
+        cache_dir = Path(f"{HOME_DIR}/workdir/RAG_Dir_GPT/{attack_vector}/.chroma_db")
+        doc_dir = f"{HOME_DIR}/workdir/RAG_Dir_GPT/{attack_vector}"
     elif "qwen3-coder" in key or "together" in key:
-        cache_dir = Path(f"/home/Anonymous/workdir/RAG_Dir_Qwen3/{attack_vector}/.chroma_db")
-        doc_dir = f"/home/Anonymous/workdir/RAG_Dir_Qwen3/{attack_vector}"
+        cache_dir = Path(f"{HOME_DIR}/workdir/RAG_Dir_Qwen3/{attack_vector}/.chroma_db")
+        doc_dir = f"{HOME_DIR}/workdir/RAG_Dir_Qwen3/{attack_vector}"
     elif "llama" in key or "maverick" in key or "ollama" in key:
-        cache_dir = Path(f"/home/Anonymous/workdir/RAG_Dir_Llama/{attack_vector}/.chroma_db")
-        doc_dir = f"/home/Anonymous/workdir/RAG_Dir_Llama/{attack_vector}"
+        cache_dir = Path(f"{HOME_DIR}/workdir/RAG_Dir_Llama/{attack_vector}/.chroma_db")
+        doc_dir = f"{HOME_DIR}/workdir/RAG_Dir_Llama/{attack_vector}"
     elif "deepseek" in key:
-        cache_dir = Path(f"/home/Anonymous/workdir/RAG_Dir_deepseek/{attack_vector}/.chroma_db")
-        doc_dir = f"/home/Anonymous/workdir/RAG_Dir_deepseek/{attack_vector}"
+        cache_dir = Path(f"{HOME_DIR}/workdir/RAG_Dir_deepseek/{attack_vector}/.chroma_db")
+        doc_dir = f"{HOME_DIR}/workdir/RAG_Dir_deepseek/{attack_vector}"
     else:
         # Safe default (keep GPT as fallback)
-        cache_dir = Path(f"/home/Anonymous/workdir/RAG_Dir_GPT/{attack_vector}/.chroma_db")
-        doc_dir = f"/home/Anonymous/workdir/RAG_Dir_GPT/{attack_vector}"
+        cache_dir = Path(f"{HOME_DIR}/workdir/RAG_Dir_GPT/{attack_vector}/.chroma_db")
+        doc_dir = f"{HOME_DIR}/workdir/RAG_Dir_GPT/{attack_vector}"
     return cache_dir, doc_dir
 
-def initialize_retriever(document_directory: str, cache_dir: Path, force_refresh: bool = False):
+def initialize_retriever(document_directory: str, cache_dir: Path, embeddings, force_refresh: bool = False):
     """
     overview of the workflow:
         Document Loading: loading documents from a specified directory.     
@@ -74,7 +87,6 @@ def initialize_retriever(document_directory: str, cache_dir: Path, force_refresh
     # If Chroma DB exists and not force_refresh, load it
     if not force_refresh and any(cache_dir.iterdir()):
         try:
-            embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
             vector_store = Chroma(
                 persist_directory=str(cache_dir),
                 embedding_function=embeddings
@@ -121,7 +133,6 @@ def initialize_retriever(document_directory: str, cache_dir: Path, force_refresh
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=6000, chunk_overlap=1500)
     docs = text_splitter.split_documents(documents)
 
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
     vector_store = Chroma.from_documents(
         docs,
         embeddings,
@@ -176,8 +187,8 @@ def rag_tool(query: str, state: Dict[str, Any] | None = None) -> tuple[str, str]
         log.info(f"[rag_tool] selected_model_key={selected_model_key}")
         log.info(f"[rag_tool] Using doc_dir={document_directory}, cache_dir={cache_dir}")
 
-        # Initialize the retriever with the directory
-        vector_store = initialize_retriever(document_directory, cache_dir)
+        embeddings = get_embeddings(selected_model_key)
+        vector_store = initialize_retriever(document_directory, cache_dir, embeddings)
 
         # Perform similarity search in the vector store
         retrieved_docs = vector_store.similarity_search(query, k=1)

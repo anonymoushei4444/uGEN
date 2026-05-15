@@ -4,57 +4,49 @@ import logging
 import os
 import importlib
 
-# -----------------  Graph Selection -------------------------------------------
-# graph without RAG with Evaluator : Offline Stage 1 --> S1: Identifying knowledge gaps 
-# from graph_offline_s1 import MainGraph
-
-# graph with RAG with Evaluator : Offline Stage 2 --> S2: RAG document generation
-# from graph_offline_s2 import MainGraph
-
-# graph with RAG with Evaluator : Offline Stage 3 --> S3: RAG Validation and refinement
-# from graph_offline_s3 import MainGraph
-
-# graph without RAG with Evaluator : Online Stage --> S4: Deployment
-# from graph_online import MainGraph
-# -------------------- END of Graph Selection ----------------------------------------
-
-
 # Local imports
 from app_config import config, get_logger
 from model_configs import models
 from agents.AgentState import AgentState
+from retrieval_queries import get_retrieval_questions
 
 
 
 PHASE_CONFIG = {
     "Offline_1": "graph_offline_s1",
-    "Offline_2": "graph_offline_s2-v2",
-    "Offline_3": "graph_offline_s3-v3",
-    "Online": "graph_online_v3",
+    "Offline_2": "graph_offline_s2",
+    "Offline_3": "graph_offline_s3",
+    "Online": "graph_online_s4",
 }
 
-# ============ MANUAL PHASE SELECTION ============
+
+
+# =================  Graph Selection =================
+# graph_offline_s1 --> S1: Identifying knowledge gaps 
+# graph_offline_s2 --> S2: RAG document generation
+# graph_offline_s3 --> S3: RAG Validation and refinement
+# graph_online_s4  --> S4: Deployment 
+
 SELECTED_PHASE = "Online"  # Change this to test different phases :  "Online", "Offline_1", "Offline_2", "Offline_3"
-# ================================================
+# ====================================================
 
 if SELECTED_PHASE not in PHASE_CONFIG:
     raise SystemExit(f"Unknown phase '{SELECTED_PHASE}'. Available: {', '.join(PHASE_CONFIG.keys())}")
 
-graph_module_name = PHASE_CONFIG[SELECTED_PHASE]
-graph_module = importlib.import_module(graph_module_name)
-MainGraph = getattr(graph_module, "MainGraph")
-
-
-
 
 # Framework entry point
 if __name__ == '__main__':
+    # UUID must be set BEFORE importing the graph module so that all module-level
+    # loggers in tool files are initialized with the correct log file path.
     config.UUID = uuid4().hex
+    graph_module_name = PHASE_CONFIG[SELECTED_PHASE]
+    graph_module = importlib.import_module(graph_module_name)
+    MainGraph = getattr(graph_module, "MainGraph")
     log = get_logger(__name__)
 
     # ============ MANUAL MODEL SELECTION ============
     # EDIT THIS LINE ONLY: choose either  "gpt-4o" or "claude-sonnet-4" or "Qwen3-Coder" 
-    SELECTED_MODEL_KEY = "gpt-4o" 
+    SELECTED_MODEL_KEY = "Qwen3-Coder" 
     config.SELECTED_MODEL_KEY = SELECTED_MODEL_KEY
     # ===============================================
 
@@ -86,19 +78,7 @@ if __name__ == '__main__':
     initial_state['target_file_extension'] = config.TARGET_FILE_EXTENSION
     initial_state['victim_function'] = config.VICTIM_FUNCTION
     initial_state['template_number']   = config.TEMPLATE_NUMBER
-    # =================================================================
-    ## Retrieval Queries for Spectre-v1
-        # Claude-Spectre-v1: ["Controlled Branch Mispredictor", "Controlled Delay", "Stride Masking", "Measuring Memory Access Time", "Array Initialization"]
-        # GPT-4o-Spectre-v1: ["Array Initialization", "Controlled Branch Mispredictor", "Cache Eviction", "Controlled Delay","Measuring Memory Access Time", "Stride Masking", "Score Accumulation"]
-        # Qwen3-Coder-Spectre-v1: ["Controlled Branch Mispredictor", "Controlled Delay" , "Mixed Probe order", "Probe and High-Resolution Timing", "Score Accumulation", "Array Initialization"]
-    
-    ## Retrieval Queries for Prime+Probe
-        # Claude-Prime-Probe: ["Randomized Pointer-Chase Linked List Construction", "Probe and High-Resolution Timing", "Victim Memory Access"]
-        # GPT-4o-Prime-Probe: ["Eviction Set Construction", "Randomized Pointer-Chase Linked List Construction", "Probe and High-Resolution Timing", "Victim Memory Access"]
-        # Qwen3-Coder-Prime-Probe: ["Randomized Pointer-Chase Linked List Construction", "Probe and High-Resolution Timing", "Victim Memory Access"]
-    
-    initial_state['retrieval_questions'] = ["Controlled Branch Mispredictor", "Controlled Delay" , "Mixed Probe order", "Probe and High-Resolution Timing", "Score Accumulation", "Array Initialization"]
-    
+    initial_state['retrieval_questions'] = get_retrieval_questions(SELECTED_MODEL_KEY, config.ATTACK_VECTORS)
     initial_state['query_index'] = 0
     initial_state['programmer_count'] = 0
     initial_state['programmer_reflection_count'] = 0
@@ -115,13 +95,23 @@ if __name__ == '__main__':
     initial_state['retrieval_tool_call_id'] = uuid4().hex  # Generate a unique tool_call_id
     initial_state['selected_model_key'] = SELECTED_MODEL_KEY
 
-
+    initial_state['total_nodes_executed'] = 0       # Track graph node executions
     initial_state['eva_exec_done'] = False          # Step-1 gate: has binary been executed at least once?
     initial_state['eva_exec_output'] = ""           # Optional: store exec stdout/stderr for LLM to read from conversation
     initial_state['eva_decision'] = None            # Optional: "success" | "fail"
     initial_state["programmer_source_code"] = None
+    
+    # New fields for convergence detection and final summary
+    initial_state['convergence_achieved'] = False   # Set to True when Reflection Agent confirms success
+    initial_state['final_summary'] = ""             # Final summary message with status
 
     graph = MainGraph(SELECTED_MODEL_KEY, prompt_phase=SELECTED_PHASE)
     graph.run(initial_state)
+    
+    # Display final summary after execution completes
+    if initial_state.get('final_summary'):
+        print(initial_state['final_summary'])
+    
     pass
     log.info(f"++++++++++ Langchain completed with UUID: {config.UUID} ++++++++++")
+

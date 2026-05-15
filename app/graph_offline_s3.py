@@ -35,7 +35,7 @@ from tools.executor import execute_binaries
 from tools.code_reader_tools import template_code_reader, read_problem_statement
 from tools.retriever_llm import rag_tool
 from tools.feedback_reader import store_rag_document, read_feedback, read_rag_document
-from tools.extract_cache_info import collect_cacheinfo
+from tools.extract_system_info import collect_system_info
 
 # Factory + model registry
 from llm_factory import build_chat_llm
@@ -120,7 +120,7 @@ class MainGraph():
     def _get_programmer_agent(self) -> ProgrammerAgent:
         prog_name    = 'ProgrammerAgent0'
         prog_version = 'v1'
-        prog_tools   = [read_problem_statement, collect_cacheinfo, template_code_reader, compile_C, compile_CPP,compile_rust]
+        prog_tools   = [read_problem_statement, collect_system_info, template_code_reader, compile_C, compile_CPP,compile_rust]
         return ProgrammerAgent(
             llm     = self.llm,
             name    = prog_name,

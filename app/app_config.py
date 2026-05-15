@@ -13,10 +13,12 @@ class AppConfig:
     VICTIM_FUNCTION: int = 1            # Victim function number, default is 1
     TEMPLATE_NUMBER: int = 3            # <- default template number (3..11)
     SEEDS: list[int] = None             # Seeds for the LLM model
-    NUM_SEEDS: int = 100                  # Number of seeds to generate
+    NUM_SEEDS: int = 700                  # Number of seeds to generate
+    LLM_NODE_DELAY_SECONDS: int = 0     # Seconds to sleep before each LLM node call (set to 0 to disable, increase if hitting TPM rate limits)
     PROG_REF_CNT: int = 8               # Maximum number of calls to the reflection agent
-    PROG_EVA_CNT: int = 7              # Maximum number of calls to the Evaluator agent
-    RECURSION_LIMIT: int = 70         # Maximum number nodes to be executed
+    PROG_EVA_CNT: int = 7               # Maximum number of calls to the Evaluator agent
+    RECURSION_LIMIT: int = 15           # Maximum number nodes to be executed
+    TIMEOUT_SECONDS: int = 3000          # Maximum wall-clock seconds before forced termination (20 min)
     LOG_LEVEL: int = logging.DEBUG      # Logging level
     LOG_FORMAT: str = '%(asctime)s %(name)-18s %(levelname)-6s %(message)s'
     LOG_DATE_FORMAT: str = '%Y-%m-%d %H:%M:%S'

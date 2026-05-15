@@ -2,6 +2,7 @@
 import os
 import subprocess
 import logging
+import platform
 # Langchain imports
 from langchain.tools import tool # type: ignore
 from pydantic import BaseModel, Field # type: ignore
@@ -12,6 +13,31 @@ from tools.file_ops import do_in, do_in_workdir, write_file
 from app_config import get_logger
 
 log = get_logger(__name__)
+
+# ARM Architecture Detection
+def get_arch_flags():
+    """Detect system architecture and return appropriate compiler flags."""
+    machine = platform.machine()
+    flags = []
+    
+    log.info(f"[*] Detected Architecture: {machine}")
+    
+    # ARM 32-bit
+    if machine in ['armv7l', 'armv6l']:
+        flags.extend(['-march=armv7-a', '-mfpu=neon', '-mfloat-abi=hard'])
+        log.info("[*] Using ARM v7 (32-bit) flags")
+    # ARM 64-bit (aarch64)
+    elif machine == 'aarch64':
+        flags.extend(['-march=armv8-a', '-mtune=generic'])
+        log.info("[*] Using ARM v8 (64-bit) flags")
+    # x86/x64
+    elif machine in ['x86_64', 'i686']:
+        flags.extend(['-march=native'])
+        log.info("[*] Using x86/x64 native flags")
+    else:
+        log.warning(f"[!] Unknown architecture: {machine}, using default flags")
+    
+    return flags
 
 class CompileGCCInput(BaseModel):
     file_contents: str = Field(..., description="the contents of the file (source code) to compile")
@@ -41,13 +67,17 @@ def compile_C(file_contents: str, state: Dict[str, Any] | None = None) -> dict[s
     write_file(file_path, file_contents)
     folder_path=os.path.dirname(file_path)
 
+    # Get architecture-specific compiler flags
+    arch_flags = get_arch_flags()
+
     # For GPT
     # cmd = ["gcc", *cflags, file_path, *ldflags]
 
-    # For Llama
+    # For Llama - with ARM support
     base_name = os.path.splitext(os.path.basename(file_path))[0]
     output_file = os.path.join(folder_path, base_name)
-    cmd = ["gcc", "-o", output_file, file_path]
+    # cmd = ["gcc"] + arch_flags + ["-o", output_file, file_path]
+    cmd = ["gcc", "-O2", "-o", output_file, file_path]
 
     with do_in_workdir():
         log.info(f"[+] Running command: {' '.join(cmd)}")
@@ -56,17 +86,28 @@ def compile_C(file_contents: str, state: Dict[str, Any] | None = None) -> dict[s
         ret = subprocess.run(cmd, capture_output=True)
         pass
 
+    stdout_str = ret.stdout.decode('utf-8', errors='replace')
+    stderr_str = ret.stderr.decode('utf-8', errors='replace')
+    status = "success" if ret.returncode == 0 else "failed"
+    
     output = f"""
     *** Compiler Output Start ***
-    {ret.stdout.decode('utf-8')}
+    {stdout_str}
     ***Compiler Output End ***
     **************************
     *** Compiler Error Start ***
-    {ret.stderr.decode('utf-8')}
+    {stderr_str}
     *** Compiler Error End ***
     """
     print(output)
-    return ret.stdout.decode('utf-8', errors='replace'), ret.stderr.decode('utf-8', errors='replace')
+    
+    return {
+        "status": status,
+        "stdout": stdout_str,
+        "stderr": stderr_str,
+        "return_code": ret.returncode,
+        "message": "Compilation completed successfully" if ret.returncode == 0 else f"Compilation failed with return code {ret.returncode}"
+    }
 
 @tool("compile_CPP", args_schema=CompileGCCInput, return_direct=True)
 def compile_CPP(file_contents: str, state: Dict[str, Any] | None = None) -> dict[str, str]:
@@ -105,17 +146,28 @@ def compile_CPP(file_contents: str, state: Dict[str, Any] | None = None) -> dict
         ret = subprocess.run(cmd, capture_output=True)
         pass
 
+    stdout_str = ret.stdout.decode('utf-8', errors='replace')
+    stderr_str = ret.stderr.decode('utf-8', errors='replace')
+    status = "success" if ret.returncode == 0 else "failed"
+    
     output = f"""
     *** Compiler Output Start ***
-    {ret.stdout.decode('utf-8')}
+    {stdout_str}
     ***Compiler Output End ***
     **************************
     *** Compiler Error Start ***
-    {ret.stderr.decode('utf-8')}
+    {stderr_str}
     *** Compiler Error End ***
     """
     print(output)
-    return ret.stdout.decode('utf-8', errors='replace'), ret.stderr.decode('utf-8', errors='replace')
+    
+    return {
+        "status": status,
+        "stdout": stdout_str,
+        "stderr": stderr_str,
+        "return_code": ret.returncode,
+        "message": "Compilation completed successfully" if ret.returncode == 0 else f"Compilation failed with return code {ret.returncode}"
+    }
 
 
 
@@ -198,11 +250,34 @@ def compile_rust(file_path: str, file_contents: str, flags: list[str]) -> dict[s
         
         
     except FileNotFoundError:
-        # Handle the case where the perf command is not found (e.g., not installed)
+        # Handle the case where the rust command is not found (e.g., not installed)
         print("Rust is not installed or not found in PATH")
-        return '', '', ''
+        return {
+            "status": "failed",
+            "stdout": "",
+            "stderr": "Rust is not installed or not found in PATH",
+            "return_code": -1,
+            "message": "Rust compiler not found"
+        }
     except Exception as e:
         # Handle other exceptions that may occur
         print(f"An unexpected error occurred: {e}")
-        return '', '', ''
-    return ret.stdout.decode('utf-8'), ret.stderr.decode('utf-8')
+        return {
+            "status": "failed",
+            "stdout": "",
+            "stderr": str(e),
+            "return_code": -1,
+            "message": f"Compilation error: {e}"
+        }
+    
+    stdout_str = ret.stdout.decode('utf-8', errors='replace')
+    stderr_str = ret.stderr.decode('utf-8', errors='replace')
+    status = "success" if ret.returncode == 0 else "failed"
+    
+    return {
+        "status": status,
+        "stdout": stdout_str,
+        "stderr": stderr_str,
+        "return_code": ret.returncode,
+        "message": "Compilation completed successfully" if ret.returncode == 0 else f"Compilation failed with return code {ret.returncode}"
+    }
