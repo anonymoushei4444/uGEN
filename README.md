@@ -171,10 +171,3 @@ uGen is structured as a four-stage pipeline. **S4 (Deployment) is the final depl
 Stages S1–S3 are offline preparation steps. Their outputs (the `workdir/RAG_Dir_*/` documents) are already included in this repository for all supported model/attack combinations, so you can **run S4 directly** without going through the offline stages.
 
 ---
-
-## Adding a New LLM Model
-
-Three files must be updated:
-1. **`app/model_configs.py`** — add an entry to the `models` dict with `provider`, `model`, and `args`.
-2. **`app/tools/retriever_llm.py`** — add a branch in `get_cache_and_doc_dir()` so the new model gets its own RAG store under `workdir/RAG_Dir_{Family}/{attack_vector}/`.
-3. **`app/retrieval_queries.py`** — add curated retrieval questions for the new model family and attack vector combination.
