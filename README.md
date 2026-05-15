@@ -69,7 +69,7 @@ The container mounts `./workdir` as `~/workdir` inside the container. All genera
 
 ## Running the Deployment Stage (S4)
 
-> S4 is the primary end-to-end stage. Given a problem statement and a curated RAG knowledge base, it autonomously generates, compiles, executes, and validates a PoC binary — no manual intervention needed after launch.
+> S4 is the final end-to-end deployment stage. Given a problem statement and a curated RAG knowledge base, it autonomously generates, compiles, executes, and validates a PoC binary — no manual intervention needed after launch.
 
 ### Step 1 — Configure `app/app.py`
 
@@ -137,15 +137,15 @@ START → [Programmer]
                 └─ otherwise          → [Programmer]
 ```
 
-**Programmer Agent** generates and iteratively refines the PoC code. Tools available: `read_problem_statement`, `compile_C`, `compile_CPP`, `compile_rust`.
+**Programmer Agent** generates and iteratively refines the PoC code. 
 
-**Retriever Node** answers the curated retrieval queries one by one from the Chroma vector store before each handoff to Reflection. Results are injected as `HumanMessage` objects so the LLM treats them as external context rather than its own prior output.
+**Retriever Node** answers the curated retrieval queries one by one from the Chroma vector store before each handoff to Reflection. 
 
-**Reflection Agent** executes the compiled binary, reads hardware performance counters, and returns structured feedback (`[STATUS: CHANGES_REQUESTED]` or `[STATUS: SUCCESS]`). Tools available: `compile_C`, `compile_CPP`, `compile_rust`, `execute_binaries`.
+**Reflection Agent** Proof-read the generated code and suggest possible fixing during failure condition.
 
-**Convergence** is declared when the Reflection Agent emits `[STATUS: SUCCESS]`, confirmed by the phrase `"THE PoC CODE IS CORRECT AND SATISFACTORY"` appearing near the end of its response with positive surrounding context.
+**Convergence** is declared when the Reflection Agent emits `[STATUS: SUCCESS]`
 
-**Termination** occurs at convergence, when the maximum reflection count (`PROG_REF_CNT`) is exceeded, or when the wall-clock timeout (`TIMEOUT_SECONDS`) is reached — whichever comes first.
+**Termination** occurs at convergence, when the maximum `RECURSION_LIMIT` is exceeded, or when the wall-clock timeout (`TIMEOUT_SECONDS`) is reached — whichever comes first.
 
 ---
 
