@@ -91,11 +91,9 @@ Then set the attack parameters a few lines below:
 config.ATTACK_VECTORS        = 'Spectre-v1'   # "Spectre-v1" | "Prime-Probe"
 config.TARGET_LANGUAGES      = 'C'
 config.TARGET_FILE_EXTENSION = 'c'
-config.VICTIM_FUNCTION       = 1              # victim function variant (1 = default)
-config.TEMPLATE_NUMBER       = 3              # evaluation template number (3–11)
 ```
 
-Retrieval questions are selected **automatically** from `app/retrieval_queries.py` based on your model and attack vector — no manual editing needed.
+Retrieval questions are selected **automatically** from `app/retrieval_queries.py` based on your model and attack vector.
 
 ### Step 2 — Build and run
 
@@ -109,25 +107,16 @@ To run multiple times with a pause between runs:
 ./run_uGEN.sh --repeat 5 --sleep 60
 ```
 
-The script calls `docker compose build` then `docker compose run --rm app` on each iteration. Wall-clock time per run is appended to `run_times.csv`.
+The script calls `docker compose build` then `docker compose run --rm app` on each iteration.
 
-> **Note:** The first build downloads and caches the local embedding model (~130 MB) inside the Docker image. Subsequent builds reuse the cache and are fast.
+> **Note:** The first build downloads and caches the local embedding model inside the Docker image. Subsequent builds reuse the cache and are fast.
 
-### Step 3 — Monitor progress
-
-The run UUID is printed at startup. Stream the log live with:
-
-```bash
-tail -f workdir/logs/<UUID>.log
-```
-
-### Step 4 — Collect output
+### Step 3 — Collect output
 
 ```
 workdir/<UUID>/PoC/<attack_vector>.<ext>   # Generated source code
 workdir/<UUID>/PoC/<attack_vector>         # Compiled binary
 workdir/logs/<UUID>.log                    # Full execution log
-run_times.csv                              # Wall-clock time per run
 ```
 
 A final summary is printed to stdout when the run completes, reporting whether the PoC converged successfully or hit the time/iteration limit.
@@ -164,16 +153,13 @@ START → [Programmer]
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `PROG_REF_CNT` | `8` | Max Reflection agent iterations before forced termination |
-| `TIMEOUT_SECONDS` | `3000` | Wall-clock limit in seconds (50 min) |
-| `RECURSION_LIMIT` | `15` | LangGraph node execution cap |
+| `RECURSION_LIMIT` | `70` | LangGraph node execution cap |
 | `LLM_NODE_DELAY_SECONDS` | `0` | Sleep before each LLM call; increase if hitting TPM rate limits |
-
 ---
 
 ## Four-Stage Pipeline
 
-uGen is structured as a four-stage pipeline. **S4 (Deployment) is the primary stage** and can be run standalone using the pre-built RAG documents included in this repository.
+uGen is structured as a four-stage pipeline. **S4 (Deployment) is the final deployment stage** and can be run standalone using the pre-built RAG documents included in this repository.
 
 | Stage | Graph file | Purpose | RAG | Evaluator |
 |-------|-----------|---------|:---:|:---------:|
@@ -189,7 +175,6 @@ Stages S1–S3 are offline preparation steps. Their outputs (the `workdir/RAG_Di
 ## Adding a New LLM Model
 
 Three files must be updated:
-
 1. **`app/model_configs.py`** — add an entry to the `models` dict with `provider`, `model`, and `args`.
 2. **`app/tools/retriever_llm.py`** — add a branch in `get_cache_and_doc_dir()` so the new model gets its own RAG store under `workdir/RAG_Dir_{Family}/{attack_vector}/`.
 3. **`app/retrieval_queries.py`** — add curated retrieval questions for the new model family and attack vector combination.
