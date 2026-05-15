@@ -6,11 +6,12 @@ Controlled branch misprediction is a critical component in speculative execution
 **Implementation Guidance:**
 To implement controlled branch misprediction, follow these steps:
 1. **Identify the Conditional Branch:** Locate the conditional branch in the victim function that can be influenced by speculative execution.
-2. **Interleave with Legitimate Accesses:** Mix legitimate accesses with speculative ones to train the branch predictor. This increases the likelihood of misprediction when the speculative path is executed.
+2. **Craft Misprediction Conditions:** Design conditions that are likely to cause the branch predictor to mispredict. This can be achieved by using patterns that the predictor has been trained to expect, such as alternating conditions or specific sequences.
+3. **Interleave with Legitimate Accesses:** Mix legitimate accesses with speculative ones to train the branch predictor. This increases the likelihood of misprediction when the speculative path is executed.
    - Interleave safe and malicious index values within the same loop to maintain continuous branch predictor influence.
    - Use branchless arithmetic expressions to toggle between safe and malicious indices. NEVER USE branching constructs like if statements or ternary (?,:) operators.
      - Example: `index = a + cond * (b - a);`, where "cond" toggles between 0 and 1 using a branchless computation (e.g., `cond = !(j % 6)`). Here, index interleaved between a and b.
-3. **Ensure Speculative Execution:** Use loop constructs or repeated invocations to ensure the speculative path is executed multiple times, increasing the chances of successful data leakage.
+4. **Ensure Speculative Execution:** Use loop constructs or repeated invocations to ensure the speculative path is executed multiple times, increasing the chances of successful data leakage.
    - Increase the number of speculative execution attempts or iterations to improve the chances of successful data leakage. Consider using a dynamic approach where the number of attempts adapts based on the success rate of previous attempts.
 
 **Placement Guidance:**

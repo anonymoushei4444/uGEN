@@ -29,8 +29,6 @@ uGen is an agentic framework that automatically generates, compiles, executes, a
 
 ## API Keys
 
-Only the key for your chosen provider is required. **`OPENAI_API_KEY` is not needed unless you are running GPT-4o** — Claude and Qwen3-Coder use a local embedding model (`BAAI/bge-small-en-v1.5`) that is pre-baked into the Docker image.
-
 | Model | Required key |
 |-------|-------------|
 | `gpt-4o` | `OPENAI_API_KEY` |
