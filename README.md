@@ -2,8 +2,6 @@
 
 uGen is an agentic framework that automatically generates, compiles, executes, and validates microarchitectural attack proof-of-concept (PoC) code using LLM agents, RAG-augmented retrieval, and iterative self-reflection.
 
-📄 [Paper](https://drive.google.com/file/d/1SHUC9J6UVh-h3DsATy6MRWJTux4p0ZjK/view?usp=sharing)
-
 ---
 
 ## Supported Attack Vectors
