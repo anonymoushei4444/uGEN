@@ -117,7 +117,7 @@ workdir/<UUID>/PoC/<attack_vector>         # Compiled binary
 workdir/logs/<UUID>.log                    # Full execution log
 ```
 
-A final summary is printed to stdout when the run completes, reporting whether the PoC converged successfully or hit the time/iteration limit.
+A final summary is printed to stdout when the run completes, reporting whether the PoC converged successfully or hit the maximum recursion limit.
 
 ---
 
